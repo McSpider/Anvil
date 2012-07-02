@@ -1,0 +1,302 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF5387F15A13EE200E95CF3 /* Cocoa.framework */; };
+		AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388815A13EE200E95CF3 /* InfoPlist.strings */; };
+		AEF5388C15A13EE200E95CF3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF5388B15A13EE200E95CF3 /* main.m */; };
+		AEF5389015A13EE200E95CF3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388E15A13EE200E95CF3 /* Credits.rtf */; };
+		AEF5389315A13EE200E95CF3 /* MyDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF5389215A13EE200E95CF3 /* MyDocument.m */; };
+		AEF5389615A13EE200E95CF3 /* MyDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = AEF5389415A13EE200E95CF3 /* MyDocument.xib */; };
+		AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = AEF5389715A13EE200E95CF3 /* MainMenu.xib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AEF5387B15A13EE200E95CF3 /* Anvil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anvil.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEF5387F15A13EE200E95CF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		AEF5388215A13EE200E95CF3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		AEF5388315A13EE200E95CF3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		AEF5388415A13EE200E95CF3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		AEF5388715A13EE200E95CF3 /* Anvil-Info.plist */ = {isa = PBXFileReference; path = "Anvil-Info.plist"; sourceTree = "<group>"; };
+		AEF5388915A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AEF5388B15A13EE200E95CF3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */ = {isa = PBXFileReference; path = "Anvil-Prefix.pch"; sourceTree = "<group>"; };
+		AEF5388F15A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		AEF5389115A13EE200E95CF3 /* MyDocument.h */ = {isa = PBXFileReference; path = MyDocument.h; sourceTree = "<group>"; };
+		AEF5389215A13EE200E95CF3 /* MyDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyDocument.m; sourceTree = "<group>"; };
+		AEF5389515A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MyDocument.xib; sourceTree = "<group>"; };
+		AEF5389815A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AEF5387815A13EE200E95CF3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AEF5387015A13EE100E95CF3 = {
+			isa = PBXGroup;
+			children = (
+				AEF5388515A13EE200E95CF3 /* Anvil */,
+				AEF5387E15A13EE200E95CF3 /* Frameworks */,
+				AEF5387C15A13EE200E95CF3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AEF5387C15A13EE200E95CF3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AEF5387B15A13EE200E95CF3 /* Anvil.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AEF5387E15A13EE200E95CF3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AEF5387F15A13EE200E95CF3 /* Cocoa.framework */,
+				AEF5388115A13EE200E95CF3 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AEF5388115A13EE200E95CF3 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AEF5388215A13EE200E95CF3 /* AppKit.framework */,
+				AEF5388315A13EE200E95CF3 /* CoreData.framework */,
+				AEF5388415A13EE200E95CF3 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		AEF5388515A13EE200E95CF3 /* Anvil */ = {
+			isa = PBXGroup;
+			children = (
+				AEF5389115A13EE200E95CF3 /* MyDocument.h */,
+				AEF5389215A13EE200E95CF3 /* MyDocument.m */,
+				AEF5389415A13EE200E95CF3 /* MyDocument.xib */,
+				AEF5389715A13EE200E95CF3 /* MainMenu.xib */,
+				AEF5388615A13EE200E95CF3 /* Supporting Files */,
+			);
+			path = Anvil;
+			sourceTree = "<group>";
+		};
+		AEF5388615A13EE200E95CF3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AEF5388715A13EE200E95CF3 /* Anvil-Info.plist */,
+				AEF5388815A13EE200E95CF3 /* InfoPlist.strings */,
+				AEF5388B15A13EE200E95CF3 /* main.m */,
+				AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */,
+				AEF5388E15A13EE200E95CF3 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AEF5387A15A13EE200E95CF3 /* Anvil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AEF5389C15A13EE200E95CF3 /* Build configuration list for PBXNativeTarget "Anvil" */;
+			buildPhases = (
+				AEF5387715A13EE200E95CF3 /* Sources */,
+				AEF5387815A13EE200E95CF3 /* Frameworks */,
+				AEF5387915A13EE200E95CF3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Anvil;
+			productName = Anvil;
+			productReference = AEF5387B15A13EE200E95CF3 /* Anvil.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AEF5387215A13EE100E95CF3 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = AEF5387515A13EE100E95CF3 /* Build configuration list for PBXProject "Anvil" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = AEF5387015A13EE100E95CF3;
+			productRefGroup = AEF5387C15A13EE200E95CF3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AEF5387A15A13EE200E95CF3 /* Anvil */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AEF5387915A13EE200E95CF3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */,
+				AEF5389015A13EE200E95CF3 /* Credits.rtf in Resources */,
+				AEF5389615A13EE200E95CF3 /* MyDocument.xib in Resources */,
+				AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AEF5387715A13EE200E95CF3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEF5388C15A13EE200E95CF3 /* main.m in Sources */,
+				AEF5389315A13EE200E95CF3 /* MyDocument.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		AEF5388815A13EE200E95CF3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AEF5388915A13EE200E95CF3 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		AEF5388E15A13EE200E95CF3 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AEF5388F15A13EE200E95CF3 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		AEF5389415A13EE200E95CF3 /* MyDocument.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AEF5389515A13EE200E95CF3 /* en */,
+			);
+			name = MyDocument.xib;
+			sourceTree = "<group>";
+		};
+		AEF5389715A13EE200E95CF3 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AEF5389815A13EE200E95CF3 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		AEF5389A15A13EE200E95CF3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		AEF5389B15A13EE200E95CF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		AEF5389D15A13EE200E95CF3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
+				INFOPLIST_FILE = "Anvil/Anvil-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		AEF5389E15A13EE200E95CF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
+				INFOPLIST_FILE = "Anvil/Anvil-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AEF5387515A13EE100E95CF3 /* Build configuration list for PBXProject "Anvil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AEF5389A15A13EE200E95CF3 /* Debug */,
+				AEF5389B15A13EE200E95CF3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AEF5389C15A13EE200E95CF3 /* Build configuration list for PBXNativeTarget "Anvil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AEF5389D15A13EE200E95CF3 /* Debug */,
+				AEF5389E15A13EE200E95CF3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AEF5387215A13EE100E95CF3 /* Project object */;
+}
