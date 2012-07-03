@@ -9,7 +9,9 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>dat, mcr, mca</string>
+				<string>dat</string>
+				<string>mcr</string>
+				<string>mca</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string></string>
@@ -41,6 +43,8 @@
 	<string>1.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array/>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
@@ -51,5 +55,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSServices</key>
+	<array/>
+	<key>UTExportedTypeDeclarations</key>
+	<array/>
+	<key>UTImportedTypeDeclarations</key>
+	<array/>
 </dict>
 </plist>
