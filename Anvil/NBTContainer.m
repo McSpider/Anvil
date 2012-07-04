@@ -319,15 +319,8 @@
 		[self appendInt:(int)self.children.count toData:data];
 		for (NBTContainer *item in self.children)
 		{
+      // FIXME - Compounds in lists start to become rooted deeper and deeper after each save.
 			if (listType == NBTTypeCompound)
-			/*{
-				for (NBTContainer *i in item)
-				{
-					[data appendData:[i data]];
-				}
-				uint8_t t = NBTTypeEnd;
-				[data appendBytes:&t length:1];
-			} */
       {
 				[data appendData:[item data]];
 				uint8_t t = NBTTypeEnd;

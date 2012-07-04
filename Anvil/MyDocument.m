@@ -94,7 +94,18 @@
 - (IBAction)addRowBelow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  NBTType type = NBTTypeByte;
+  NSString *name = @"Row Below";
+  if (item.parent && item.parent.listType) {
+    type = item.parent.listType;
+    name = nil;
+  }
+  
+  NBTContainer *newItem;
+  if (item.parent && item.parent.listType == NBTTypeCompound)
+    newItem = [NBTContainer compoundWithName:name];
+  else
+    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
   [newItem setParent:[item parent]];
 
   [[[item parent] children] insertObject:newItem 
@@ -105,7 +116,18 @@
 - (IBAction)addRowAbove:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  NBTType type = NBTTypeByte;
+  NSString *name = @"Row Above";
+  if (item.parent && item.parent.listType) {
+    type = item.parent.listType;
+    name = nil;
+  }
+  
+  NBTContainer *newItem;
+  if (item.parent && item.parent.listType == NBTTypeCompound)
+    newItem = [NBTContainer compoundWithName:name];
+  else
+    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
   [newItem setParent:[item parent]];
   
   [[[item parent] children] insertObject:newItem 
@@ -116,11 +138,24 @@
 - (IBAction)addChild:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  NBTType type = NBTTypeByte;
+  NSString *name = @"Child";
+  if (item.listType) {
+    type = item.listType;
+    name = nil;
+  }
+  
+  NBTContainer *newItem;
+  if (item.listType == NBTTypeCompound)
+    newItem = [NBTContainer compoundWithName:name];
+  else
+    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
   [newItem setParent:item];
 
   [[item children] addObject:newItem];
   [dataView reloadData];
+  
+  [dataView expandItem:item];
 }
 
 
@@ -269,7 +304,18 @@
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:YES];
   
-    [[[outlineView menu] itemAtIndex:4] setEnabled:[self outlineView:dataView isItemExpandable:[dataView itemAtRow:row]]];
+    
+    BOOL isEnabled = NO;
+    
+    NBTContainer *cont = [dataView itemAtRow:row];
+    if (cont == nil)
+      if ([fileData type] == NBTTypeCompound || [fileData type] == NBTTypeList)
+        isEnabled = YES;
+    if ([[dataView itemAtRow:row] isKindOfClass:[NBTContainer class]])
+      if ((cont.type == NBTTypeCompound || cont.type == NBTTypeList))
+        isEnabled = YES;
+    
+    [[[outlineView menu] itemAtIndex:4] setEnabled:isEnabled];
   }
 }
 
