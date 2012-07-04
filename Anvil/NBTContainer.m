@@ -45,6 +45,7 @@
 @implementation NBTContainer
 @synthesize name, children, type;
 @synthesize stringValue, numberValue, listType;
+@synthesize parent;
 
 - (id)init
 {
@@ -187,6 +188,7 @@
 			
 			NBTContainer *child = [[NBTContainer alloc] init];
 			[child populateWithBytes:bytes offset:&offset];
+      child.parent = self;
 			[self.children addObject:child];
 			[child release];
 		}
@@ -207,8 +209,8 @@
 				uint32_t i = [self intFromBytes:bytes offset:&offset];
 				float f = *((float*)&i);
 				NSNumber *num = [NSNumber numberWithFloat:f];
-        NBTListItem *listItem = [[NBTListItem alloc] initWithValue:num type:listType];
-        [listItem setIndex:listLength];
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:listType numberValue:num];
+        listItem.parent = self;
 				[self.children addObject:listItem];
         NBTLog(@"      list item, float=%f", f);
 			}
@@ -217,14 +219,14 @@
 				uint64_t l = [self longFromBytes:bytes offset:&offset];
 				double d = *((double*)&l);
 				NSNumber *num = [NSNumber numberWithDouble:d];
-        NBTListItem *listItem = [[NBTListItem alloc] initWithValue:num type:listType];
-        [listItem setIndex:listLength];
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:listType numberValue:num];
+        listItem.parent = self;
 				[self.children addObject:listItem];
         NBTLog(@"      list item, double=%lf", d);
 			}
 			else if (listType == NBTTypeCompound)
 			{
-        NBTContainer *compound = [NBTContainer compoundWithName:@"Item"];
+        NBTContainer *compound = [NBTContainer compoundWithName:nil];
         NBTLog(@"  >> list item, compound");
 				NSMutableArray *array = [NSMutableArray array];
 				while (1)
@@ -237,11 +239,13 @@
           
 					NBTContainer *child = [[NBTContainer alloc] init];
 					[child populateWithBytes:bytes offset:&offset];
+          child.parent = compound;
 					[array addObject:child];
 					[child release];
 				}
         
         [compound.children addObjectsFromArray:array];
+        compound.parent = self;
 				[self.children addObject:compound];
 			}
 			else
@@ -313,7 +317,7 @@
 	{
 		[self appendByte:self.listType toData:data];
 		[self appendInt:(int)self.children.count toData:data];
-		for (id item in self.children)
+		for (NBTContainer *item in self.children)
 		{
 			if (listType == NBTTypeCompound)
 			/*{
@@ -331,15 +335,15 @@
 			}
 			else if (listType == NBTTypeFloat)
 			{
-				[self appendFloat:[item floatValue] toData:data];
+				[self appendFloat:[item.numberValue floatValue] toData:data];
 			}
 			else if (listType == NBTTypeDouble)
 			{
-				[self appendDouble:[item doubleValue] toData:data];
+				[self appendDouble:[item.numberValue doubleValue] toData:data];
 			}
 			else if (listType == NBTTypeByte)
 			{
-				[self appendByte:[item unsignedCharValue] toData:data];
+				[self appendByte:[item.numberValue unsignedCharValue] toData:data];
 			}
 			else
 			{

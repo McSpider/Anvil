@@ -18,7 +18,6 @@
 		AEF538A115A13FFB00E95CF3 /* NBTContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF538A015A13FFB00E95CF3 /* NBTContainer.m */; };
 		AEF538A815A140C500E95CF3 /* NSData+CocoaDevAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */; };
 		AEF538AE15A140F000E95CF3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF538AD15A140F000E95CF3 /* libz.dylib */; };
-		AEF538C315A2B1FB00E95CF3 /* NBTListItem.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF538C215A2B1FB00E95CF3 /* NBTListItem.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,8 +42,6 @@
 		AEF538A615A140C500E95CF3 /* NSData+CocoaDevAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+CocoaDevAdditions.h"; sourceTree = "<group>"; };
 		AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+CocoaDevAdditions.m"; sourceTree = "<group>"; };
 		AEF538AD15A140F000E95CF3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		AEF538C115A2B1FB00E95CF3 /* NBTListItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NBTListItem.h; sourceTree = "<group>"; };
-		AEF538C215A2B1FB00E95CF3 /* NBTListItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NBTListItem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,8 +101,6 @@
 				AEF5389215A13EE200E95CF3 /* MyDocument.m */,
 				AEF5389F15A13FFB00E95CF3 /* NBTContainer.h */,
 				AEF538A015A13FFB00E95CF3 /* NBTContainer.m */,
-				AEF538C115A2B1FB00E95CF3 /* NBTListItem.h */,
-				AEF538C215A2B1FB00E95CF3 /* NBTListItem.m */,
 				AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */,
 				AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */,
 				AEF538A615A140C500E95CF3 /* NSData+CocoaDevAdditions.h */,
@@ -194,7 +189,6 @@
 				AEF5389315A13EE200E95CF3 /* MyDocument.m in Sources */,
 				AEF538A115A13FFB00E95CF3 /* NBTContainer.m in Sources */,
 				AEF538A815A140C500E95CF3 /* NSData+CocoaDevAdditions.m in Sources */,
-				AEF538C315A2B1FB00E95CF3 /* NBTListItem.m in Sources */,
 				AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

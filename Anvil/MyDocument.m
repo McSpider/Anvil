@@ -48,7 +48,7 @@
   You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
   */
   
-  //return [fileData writeData];
+  return [fileData writeData];
   
   if (outError) {
       *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
@@ -85,22 +85,42 @@
 
 - (IBAction)removeRow:(id)sender
 {
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  [[[item parent] children] removeObject:item];
   
+  [dataView reloadData];
 }
 
 - (IBAction)addRowBelow:(id)sender
 {
-  
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  [newItem setParent:[item parent]];
+
+  [[[item parent] children] insertObject:newItem 
+                                 atIndex:[[[item parent] children] indexOfObject:item]+1];
+  [dataView reloadData];
 }
 
 - (IBAction)addRowAbove:(id)sender
 {
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  [newItem setParent:[item parent]];
   
+  [[[item parent] children] insertObject:newItem 
+                      atIndex:[[[item parent] children] indexOfObject:item]];
+  [dataView reloadData];
 }
 
 - (IBAction)addChild:(id)sender
 {
-  
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  NBTContainer *newItem = [NBTContainer containerWithName:@"Test" type:NBTTypeInt numberValue:[NSNumber numberWithInt:1]];
+  [newItem setParent:item];
+
+  [[item children] addObject:newItem];
+  [dataView reloadData];
 }
 
 
@@ -164,31 +184,60 @@
       return [NSNumber numberWithInt:[(NBTContainer *)item type]-1];
     else if ([tableColumn.identifier intValue] == 1)
       return ([(NBTContainer *)item type] == NBTTypeString?[(NBTContainer *)item stringValue]:[(NBTContainer *)item numberValue]);
-  }
-  else if ([item isKindOfClass:[NBTListItem class]]) {
-    if ([tableColumn.identifier intValue] == 0)
-      return [NSString stringWithFormat:@"Item %i",[(NBTListItem *)item index]];
-    else if ([tableColumn.identifier intValue] == 2)
-      return [NSNumber numberWithInt:[(NBTListItem *)item listType]];
-    else if ([tableColumn.identifier intValue] == 1)
-      return ([(NBTListItem *)item listType] == NBTTypeString?[(NBTListItem *)item value]:[(NBTListItem *)item value]);
-  }
-  
+  }  
   return nil;
 }
 
 - (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
+  NSString *stringValue = (NSString *)object;
+  
   if ([tableColumn.identifier intValue] == 1) {
-    if ([(NBTContainer *)item type] == NBTTypeString) {
-      [(NBTContainer *)item setStringValue:(NSString *)object];
-    }
-    else {
-      [(NBTContainer *)item setNumberValue:(NSNumber *)object];
+    if ([item isKindOfClass:[NBTContainer class]]) {
+      
+      NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+      [formatter setNumberStyle:NSNumberFormatterNoStyle];
+      NSNumber *myNumber = [formatter numberFromString:stringValue];
+      [formatter release];
+      
+      if ([(NBTContainer *)item type] == NBTTypeString)
+      {
+        [(NBTContainer *)item setStringValue:stringValue];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeLong)
+      {
+        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedLongLong:[stringValue unsignedLongLongValue]]];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeShort)
+      {
+        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithShort:[stringValue shortValue]]];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeInt)
+      {
+        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithInt:[stringValue intValue]]];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeByte)
+      {
+        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedChar:[stringValue unsignedCharValue]]];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeDouble)
+      {
+        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithDouble:[stringValue doubleValue]]];
+      }
+      else if ([(NBTContainer *)item type] == NBTTypeFloat)
+      {
+       [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithFloat:[stringValue floatValue]]];
+      }
+
     }
   }
   else if ([tableColumn.identifier intValue] == 2) {
-    [(NBTContainer *)item setType:[(NSNumber *)object intValue]+1];
+    if ([item isKindOfClass:[NBTContainer class]])
+      [(NBTContainer *)item setType:[(NSNumber *)object intValue]+1];
+  }
+  else if ([tableColumn.identifier intValue] == 0) {
+    if ([item isKindOfClass:[NBTContainer class]])
+      [(NBTContainer *)item setName:(NSString *)object];
   }
 }
 
@@ -200,10 +249,12 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-  if ([tableColumn.identifier intValue] == 0)
-    return NO;
+  if ([tableColumn.identifier intValue] == 0) {
+      if ([item isKindOfClass:[NBTContainer class]])
+        return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
+  }  
   
-  if ([self outlineView:outlineView isItemExpandable:item])
+  if ([self outlineView:outlineView isItemExpandable:item] && [tableColumn.identifier intValue] != 0)
     return NO;
   
   return YES;
