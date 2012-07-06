@@ -158,6 +158,25 @@
   [dataView expandItem:item];
 }
 
+- (IBAction)changeListType:(id)sender
+{
+  NBTType newType = (int)[sender tag];
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  if (item.type == NBTTypeList) {
+    item.listType = newType;
+    for (NBTContainer *child in item.children) {
+      child.type = item.listType;
+    }
+  }
+  else if (item.parent && item.parent.type == NBTTypeList) {
+    item.parent.listType = newType;
+    for (NBTContainer *child in item.parent.children) {
+      child.type = item.parent.listType;
+    }
+  }
+  
+  [dataView reloadData];  
+}
 
 
 #pragma mark -
@@ -166,13 +185,10 @@
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {
   if (item == nil)
-      return [fileData children].count;
+    return [fileData children].count;
   
   if ([item isKindOfClass:[NBTContainer class]])
     return [(NBTContainer *)item children].count;
-  else if ([item isKindOfClass:[NSArray class]])
-    return [(NSArray *)item count];
-
   
   return 0;
 }
@@ -184,8 +200,8 @@
       return YES;
   
   if ([item isKindOfClass:[NBTContainer class]] && [[(NBTContainer *)item children] count] > 0)
-    return YES;    
-    
+    return YES;
+  
   return NO;
 }
 
@@ -196,29 +212,37 @@
   
   if ([item isKindOfClass:[NBTContainer class]])
     return [[(NBTContainer *)item children] objectAtIndex:index];
-  else if ([item isKindOfClass:[NSArray class]])
-    return [(NSArray *)item objectAtIndex:index];
   
   return nil;
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-  if (item == nil)
+  if (item == nil) {
     if ([tableColumn.identifier isEqualToString:@"name"])
       return [fileData name];
     else if ([tableColumn.identifier intValue] == 2)
       return [NSNumber numberWithInt:[(NBTContainer *)item type]-1];
     else if ([tableColumn.identifier intValue] == 1)
       return [fileData numberValue];
+  }
   
   if ([item isKindOfClass:[NBTContainer class]]) {
-    if ([tableColumn.identifier intValue] == 0)
+    // Key
+    if ([tableColumn.identifier intValue] == 0) {
       return [(NBTContainer *)item name];
-    else if ([tableColumn.identifier intValue] == 2)
+    }
+    // Type
+    else if ([tableColumn.identifier intValue] == 2) {
       return [NSNumber numberWithInt:[(NBTContainer *)item type]-1];
-    else if ([tableColumn.identifier intValue] == 1)
-      return ([(NBTContainer *)item type] == NBTTypeString?[(NBTContainer *)item stringValue]:[(NBTContainer *)item numberValue]);
+    }
+    // Value
+    else if ([tableColumn.identifier intValue] == 1) {
+      if ([(NBTContainer *)item type] == NBTTypeString || [(NBTContainer *)item type] == NBTTypeByteArray)
+        return [(NBTContainer *)item stringValue];
+      else
+        return [(NBTContainer *)item numberValue];
+    }
   }  
   return nil;
 }
@@ -227,6 +251,7 @@
 {
   NSString *stringValue = (NSString *)object;
   
+  // Value
   if ([tableColumn.identifier intValue] == 1) {
     if ([item isKindOfClass:[NBTContainer class]]) {
       
@@ -263,13 +288,15 @@
       {
        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithFloat:[stringValue floatValue]]];
       }
-
+      
     }
   }
+  // Type
   else if ([tableColumn.identifier intValue] == 2) {
     if ([item isKindOfClass:[NBTContainer class]])
       [(NBTContainer *)item setType:[(NSNumber *)object intValue]+1];
   }
+  // Key
   else if ([tableColumn.identifier intValue] == 0) {
     if ([item isKindOfClass:[NBTContainer class]])
       [(NBTContainer *)item setName:(NSString *)object];
@@ -284,10 +311,10 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-  if ([tableColumn.identifier intValue] == 0) {
+  if ([tableColumn.identifier intValue] == 0 || [tableColumn.identifier intValue] == 2) {
       if ([item isKindOfClass:[NBTContainer class]])
         return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
-  }  
+  }
   
   if ([self outlineView:outlineView isItemExpandable:item] && [tableColumn.identifier intValue] != 0)
     return NO;
@@ -297,25 +324,34 @@
 
 - (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row
 {
-  if (row == -1)
+  if (row == -1) {
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:NO];
+  }
   else {
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:YES];
-  
     
-    BOOL isEnabled = NO;
     
+    BOOL addChildMenuEnabled = NO;
+    BOOL changeListTypeMenuEnabled = NO;
     NBTContainer *cont = [dataView itemAtRow:row];
-    if (cont == nil)
-      if ([fileData type] == NBTTypeCompound || [fileData type] == NBTTypeList)
-        isEnabled = YES;
-    if ([[dataView itemAtRow:row] isKindOfClass:[NBTContainer class]])
-      if ((cont.type == NBTTypeCompound || cont.type == NBTTypeList))
-        isEnabled = YES;
     
-    [[[outlineView menu] itemAtIndex:4] setEnabled:isEnabled];
+    if (cont == nil) {
+      if ([fileData type] == NBTTypeCompound || [fileData type] == NBTTypeList)
+        addChildMenuEnabled = YES;
+    }
+    if ([cont isKindOfClass:[NBTContainer class]]) {
+      if (cont.type == NBTTypeCompound || cont.type == NBTTypeList)
+        addChildMenuEnabled = YES;
+      
+      if ((cont.parent && cont.parent.type == NBTTypeList) || cont.type == NBTTypeList)
+        changeListTypeMenuEnabled = YES;
+    
+    }
+    
+    [[[outlineView menu] itemAtIndex:4] setEnabled:addChildMenuEnabled];
+    [[[outlineView menu] itemAtIndex:6] setEnabled:changeListTypeMenuEnabled];
   }
 }
 

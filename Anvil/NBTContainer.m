@@ -49,9 +49,13 @@
 
 - (id)init
 {
-	if ((self = [super init]))
-	{
-	}
+	if (![super init])
+    return nil;
+  
+  self.name = nil;
+	self.stringValue = nil;
+	self.numberValue = nil;
+  
 	return self;
 }
 - (void)dealloc
@@ -152,7 +156,7 @@
 {
 	if (self.type != NBTTypeCompound)
 	{
-		NSLog(@"ERROR: Cannot find children inside a non-compound NBTContainer.");
+		NSLog(@"ERROR: Cannot find named children inside a non-compound NBTContainer.");
 		return nil;
 	}
 	for (NBTContainer *container in self.children)
@@ -227,7 +231,7 @@
 			else if (listType == NBTTypeCompound)
 			{
         NBTContainer *compound = [NBTContainer compoundWithName:nil];
-        NBTLog(@"  >> list item, compound");
+        NBTLog(@"      start list item, compound");
 				NSMutableArray *array = [NSMutableArray array];
 				while (1)
 				{
@@ -247,6 +251,7 @@
         [compound.children addObjectsFromArray:array];
         compound.parent = self;
 				[self.children addObject:compound];
+        NBTLog(@"      end list item, compound");
 			}
 			else
 			{
@@ -289,6 +294,34 @@
 		self.numberValue = [NSNumber numberWithFloat:f];
 		NBTLog(@"   name=%@ float=%f", self.name, [self.numberValue floatValue]);
 	}
+  // FIXME
+  else if (self.type == NBTTypeByteArray)
+	{
+    NBTLog(@">> start byte array named %@", self.name);
+
+    NSString *aString = @"";
+    for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
+      aString = [aString stringByAppendingFormat:@"0x%x ",[NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]]];
+    }
+    self.stringValue = aString;
+    
+		NBTLog(@"   array=%@", self.stringValue);
+    NBTLog(@"<< end byte array %@", self.name);
+	}
+  else if (self.type == NBTTypeIntArray)
+	{
+    NBTLog(@">> start int array named %@", self.name);
+    
+    NSString *aString = @"";
+    for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
+      aString = [aString stringByAppendingFormat:@"0x%x ",[NSNumber numberWithInt:[self intFromBytes:bytes offset:&offset]]];
+    }
+    self.stringValue = aString;
+    
+		NBTLog(@"   array=%@", self.stringValue);
+    NBTLog(@"<< end int array %@", self.name);
+	}
+  // END
 	else
 	{
 		NBTLog(@"Unhandled type: %d", self.type);
@@ -342,7 +375,6 @@
 			{
 				NBTLog(@"Unhandled list type: %d", listType);
 			}
-
 		}
 	}
 	else if (self.type == NBTTypeString)

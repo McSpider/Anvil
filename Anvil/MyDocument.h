@@ -20,5 +20,6 @@
 - (IBAction)addRowBelow:(id)sender;
 - (IBAction)addRowAbove:(id)sender;
 - (IBAction)addChild:(id)sender;
+- (IBAction)changeListType:(id)sender;
 
 @end

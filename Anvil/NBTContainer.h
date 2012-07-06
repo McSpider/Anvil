@@ -20,6 +20,7 @@ typedef enum {
 	NBTTypeString = 8,
 	NBTTypeList = 9,
 	NBTTypeCompound = 10,
+  NBTTypeIntArray = 11,
 } NBTType;
 
 
