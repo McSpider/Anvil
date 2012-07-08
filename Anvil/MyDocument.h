@@ -11,6 +11,8 @@
 
 @interface MyDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource> {
   NBTContainer *fileData;
+  IBOutlet NSMenu *typeMenu;
+  
   IBOutlet NSOutlineView *dataView;
 }
 

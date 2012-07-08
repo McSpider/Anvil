@@ -30,6 +30,7 @@ typedef enum {
 	NBTType type;
 	NSString *stringValue;
 	NSNumber *numberValue;
+  NSMutableArray *arrayValue;
 	NBTType listType;
   
   NBTContainer *parent;
@@ -39,6 +40,7 @@ typedef enum {
 @property (nonatomic, assign) NBTType type;
 @property (nonatomic, retain) NSString *stringValue;
 @property (nonatomic, retain) NSNumber *numberValue;
+@property (nonatomic, retain) NSMutableArray *arrayValue;
 @property (nonatomic, assign) NBTType listType;
 @property (nonatomic, assign) NBTContainer *parent;
 

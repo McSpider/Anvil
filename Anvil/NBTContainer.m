@@ -44,7 +44,7 @@
 
 @implementation NBTContainer
 @synthesize name, children, type;
-@synthesize stringValue, numberValue, listType;
+@synthesize stringValue, numberValue, arrayValue, listType;
 @synthesize parent;
 
 - (id)init
@@ -55,6 +55,7 @@
   self.name = nil;
 	self.stringValue = nil;
 	self.numberValue = nil;
+  self.arrayValue = nil;
   
 	return self;
 }
@@ -64,6 +65,7 @@
 	[children release];
 	[stringValue release];
 	[numberValue release];
+  [arrayValue release];
 	[super dealloc];
 }
 
@@ -294,34 +296,34 @@
 		self.numberValue = [NSNumber numberWithFloat:f];
 		NBTLog(@"   name=%@ float=%f", self.name, [self.numberValue floatValue]);
 	}
-  // FIXME
   else if (self.type == NBTTypeByteArray)
 	{
     NBTLog(@">> start byte array named %@", self.name);
 
-    NSString *aString = @"";
+    NSArray *byteArray = [[NSArray alloc] init];
     for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
-      aString = [aString stringByAppendingFormat:@"0x%x ",[NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]]];
+      NSNumber *byteV = [NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]];
+      byteArray = [byteArray arrayByAddingObject:byteV];
     }
-    self.stringValue = aString;
+    self.arrayValue = [NSMutableArray arrayWithArray:byteArray];
     
-		NBTLog(@"   array=%@", self.stringValue);
+		NBTLog(@"   array=%@", self.arrayValue);
     NBTLog(@"<< end byte array %@", self.name);
 	}
   else if (self.type == NBTTypeIntArray)
 	{
     NBTLog(@">> start int array named %@", self.name);
     
-    NSString *aString = @"";
+    NSArray *intArray = [[NSArray alloc] init];
     for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
-      aString = [aString stringByAppendingFormat:@"0x%x ",[NSNumber numberWithInt:[self intFromBytes:bytes offset:&offset]]];
+      NSNumber *intV = [NSNumber numberWithInt:[self intFromBytes:bytes offset:&offset]];
+      intArray = [intArray arrayByAddingObject:intV];
     }
-    self.stringValue = aString;
+    self.arrayValue = [NSMutableArray arrayWithArray:intArray];
     
-		NBTLog(@"   array=%@", self.stringValue);
+		NBTLog(@"   array=%@", self.arrayValue);
     NBTLog(@"<< end int array %@", self.name);
 	}
-  // END
 	else
 	{
 		NBTLog(@"Unhandled type: %d", self.type);
@@ -404,6 +406,23 @@
 	else if (self.type == NBTTypeFloat)
 	{
 		[self appendFloat:[self.numberValue floatValue] toData:data];
+	}
+  // FIXME - Fix byte/int array saving (loading should be fine)
+  else if (self.type == NBTTypeByteArray)
+	{
+    [self appendInt:(int)self.arrayValue.count toData:data];
+    for (NSNumber *byteS in self.arrayValue) {
+      uint8_t byteV = [byteS unsignedCharValue];
+      [self appendByte:byteV toData:data];
+    }
+	}
+  else if (self.type == NBTTypeIntArray)
+	{
+    [self appendInt:(int)self.arrayValue.count toData:data];
+    for (NSNumber *intS in self.arrayValue) {
+      uint32_t intV = [intS unsignedCharValue];
+      [self appendInt:intV toData:data];
+    }
 	}
 	else
 	{
