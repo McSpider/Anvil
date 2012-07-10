@@ -2,8 +2,8 @@
 //  main.m
 //  Anvil
 //
-//  Created by Benjamin Kohler on 12/07/01.
-//  Copyright 2012 __MyCompanyName__. All rights reserved.
+//  Created by Ben K on 12/07/01.
+//  All code is provided under the New BSD license. Copyright 2011 Ben K.
 //
 
 #import <Cocoa/Cocoa.h>

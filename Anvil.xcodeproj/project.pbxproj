@@ -15,7 +15,7 @@
 		AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF5387F15A13EE200E95CF3 /* Cocoa.framework */; };
 		AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388815A13EE200E95CF3 /* InfoPlist.strings */; };
 		AEF5388C15A13EE200E95CF3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF5388B15A13EE200E95CF3 /* main.m */; };
-		AEF5389015A13EE200E95CF3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388E15A13EE200E95CF3 /* Credits.rtf */; };
+		AEF5389015A13EE200E95CF3 /* Credits.html in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388E15A13EE200E95CF3 /* Credits.html */; };
 		AEF5389315A13EE200E95CF3 /* MyDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF5389215A13EE200E95CF3 /* MyDocument.m */; };
 		AEF5389615A13EE200E95CF3 /* MyDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = AEF5389415A13EE200E95CF3 /* MyDocument.xib */; };
 		AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = AEF5389715A13EE200E95CF3 /* MainMenu.xib */; };
@@ -42,7 +42,7 @@
 		AEF5388915A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AEF5388B15A13EE200E95CF3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Anvil-Prefix.pch"; sourceTree = "<group>"; };
-		AEF5388F15A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		AEF5388F15A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/Credits.html; sourceTree = "<group>"; };
 		AEF5389115A13EE200E95CF3 /* MyDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyDocument.h; sourceTree = "<group>"; };
 		AEF5389215A13EE200E95CF3 /* MyDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyDocument.m; sourceTree = "<group>"; };
 		AEF5389515A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MyDocument.xib; sourceTree = "<group>"; };
@@ -143,7 +143,7 @@
 				AEF5388B15A13EE200E95CF3 /* main.m */,
 				AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */,
 				AEEBE37F15A6AEFF009755CD /* NBT.txt */,
-				AEF5388E15A13EE200E95CF3 /* Credits.rtf */,
+				AEF5388E15A13EE200E95CF3 /* Credits.html */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -196,7 +196,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */,
-				AEF5389015A13EE200E95CF3 /* Credits.rtf in Resources */,
+				AEF5389015A13EE200E95CF3 /* Credits.html in Resources */,
 				AEF5389615A13EE200E95CF3 /* MyDocument.xib in Resources */,
 				AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */,
 				AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */,
@@ -232,12 +232,12 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		AEF5388E15A13EE200E95CF3 /* Credits.rtf */ = {
+		AEF5388E15A13EE200E95CF3 /* Credits.html */ = {
 			isa = PBXVariantGroup;
 			children = (
 				AEF5388F15A13EE200E95CF3 /* en */,
 			);
-			name = Credits.rtf;
+			name = Credits.html;
 			sourceTree = "<group>";
 		};
 		AEF5389415A13EE200E95CF3 /* MyDocument.xib */ = {

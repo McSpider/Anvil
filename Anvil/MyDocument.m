@@ -2,8 +2,8 @@
 //  MyDocument.m
 //  Anvil
 //
-//  Created by Benjamin Kohler on 12/07/01.
-//  Copyright 2012 __MyCompanyName__. All rights reserved.
+//  Created by Ben K on 12/07/01.
+//  All code is provided under the New BSD license. Copyright 2011 Ben K.
 //
 
 #import "MyDocument.h"
@@ -232,7 +232,7 @@
     if ([tableColumn.identifier intValue] == 0)
       return [fileData name];
     else if ([tableColumn.identifier intValue] == 2)
-      return [NSNumber numberWithInt:[fileData type]-1];
+      return [NSNumber numberWithInt:[fileData type]+1];
     else if ([tableColumn.identifier intValue] == 1)
       return [fileData numberValue];
   }
@@ -246,7 +246,7 @@
     }
     // Type
     else if ([tableColumn.identifier intValue] == 2) {
-      return [NSNumber numberWithInt:[(NBTContainer *)item type]-1];
+      return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
     }
     // Value
     else if ([tableColumn.identifier intValue] == 1) {
@@ -255,7 +255,7 @@
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
       else if ([(NBTContainer *)item type] == NBTTypeList) {
-        return [NSNumber numberWithInt:[(NBTContainer *)item listType]-1];
+        return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
       }
       else
         return [(NBTContainer *)item numberValue];
@@ -272,7 +272,7 @@
     // Value
     if ([tableColumn.identifier intValue] == 1) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
-        [(NBTContainer *)item setListType:[(NSNumber *)object intValue]+1];
+        [(NBTContainer *)item setListType:[(NSNumber *)object intValue]-1];
         return;
       }
       
@@ -312,7 +312,7 @@
     }
     // Type
     else if ([tableColumn.identifier intValue] == 2) {
-        [(NBTContainer *)item setType:[(NSNumber *)object intValue]+1];
+        [(NBTContainer *)item setType:[(NSNumber *)object intValue]-1];
     }
     // Key
     else if ([tableColumn.identifier intValue] == 0) {
@@ -381,6 +381,10 @@
         [listTypeCell setBordered:NO];
         NSMenu *aMenu = [typeMenu copy];
         [listTypeCell setMenu:aMenu];
+        [[aMenu itemAtIndex:0] setTitle:@"List Type"];
+        [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
+        [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
+        [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
         for (NSMenuItem *mItem in [[listTypeCell menu] itemArray]) {
           [mItem setTarget:self];
           [mItem setAction:@selector(changeListType:)];
@@ -389,7 +393,7 @@
         return [listTypeCell autorelease];
       }
       // Disable byte/int array value fields
-      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray) {
+      else if (isContainer && ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)) {
         NSCell *dataCell = [[tableColumn dataCell] copy];
         [dataCell setEnabled:NO];
         return [dataCell autorelease];
