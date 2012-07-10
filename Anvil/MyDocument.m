@@ -10,6 +10,7 @@
 
 @implementation MyDocument
 @synthesize fileData;
+@synthesize fileLoaded;
 
 - (id)init
 {
@@ -26,6 +27,7 @@
   
   [container.children addObject:child];
   [fileData.children addObject:container];
+  self.fileLoaded = YES;
   
   return self;
 }
@@ -73,9 +75,15 @@
   If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
   */
   
+  /*
   [fileData release];
   fileData = [[NBTContainer nbtContainerWithData:data] retain];
   [dataView reloadData];
+  */
+  [fileData release];
+  fileData = [[NBTContainer alloc] init];
+  self.fileLoaded = NO;
+  [self performSelectorInBackground:@selector(loadData:) withObject:data];
   
   
   if (outError) {
@@ -87,6 +95,19 @@
 + (BOOL)autosavesInPlace
 {
     return NO;
+}
+
+- (void)loadData:(NSData *)data
+{
+  NBTContainer *container = [[NBTContainer alloc] init];
+	[container readFromData:data];
+  
+  [fileData release];
+  fileData = [container retain];
+  
+  self.fileLoaded = YES;
+  [dataView reloadData];
+  [dataView.window makeFirstResponder:dataView];
 }
 
 #pragma mark -
@@ -251,9 +272,8 @@
     else if ([tableColumn.identifier intValue] == 1) {
       if ([(NBTContainer *)item type] == NBTTypeString)
         return [(NBTContainer *)item stringValue];
-      // TODO - Figure out the best way to display byte/int arrays
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
-        return @"Array not editable";
+        return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
       else if ([(NBTContainer *)item type] == NBTTypeList) {
         return [NSNumber numberWithInt:[(NBTContainer *)item listType]-1];
       }
@@ -375,22 +395,32 @@
     BOOL isContainer = [item isKindOfClass:[NBTContainer class]];
     
     if ([tableColumn.identifier intValue] == 1) {
+      // Change list value field to a listType popup
       if (isContainer && [(NBTContainer *)item type] == NBTTypeList) {
         NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
         [listTypeCell setBordered:NO];
-        [listTypeCell setMenu:[typeMenu copy]];
+        NSMenu *aMenu = [typeMenu copy];
+        [listTypeCell setMenu:aMenu];
         for (NSMenuItem *mItem in [[listTypeCell menu] itemArray]) {
           [mItem setTarget:self];
           [mItem setAction:@selector(changeListType:)];
         }
-        return listTypeCell;
+        [aMenu release];
+        return [listTypeCell autorelease];
+      }
+      // Disable byte/int array value fields
+      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray) {
+        NSCell *dataCell = [[tableColumn dataCell] copy];
+        [dataCell setEnabled:NO];
+        return [dataCell autorelease];
       }
     }
     else if ([tableColumn.identifier intValue] == 2) {
+      // Disable the type popup for list items
       if (isContainer && [[(NBTContainer *)item parent] type] == NBTTypeList) {
         NSCell *dataCell = [[tableColumn dataCell] copy];
         [dataCell setEnabled:NO];
-        return dataCell;
+        return [dataCell autorelease];
       }
     }
   }

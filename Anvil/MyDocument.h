@@ -14,9 +14,11 @@
   IBOutlet NSMenu *typeMenu;
   
   IBOutlet NSOutlineView *dataView;
+  BOOL fileLoaded;
 }
 
 @property (nonatomic, retain) NBTContainer *fileData;
+@property BOOL fileLoaded;
 
 - (IBAction)removeRow:(id)sender;
 - (IBAction)addRowBelow:(id)sender;

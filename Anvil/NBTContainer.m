@@ -134,6 +134,9 @@
 
 + (id)nbtContainerWithData:(NSData *)data;
 {
+  if (!data)
+    return nil;
+  
 	id obj = [[[self class] alloc] init];
 	[obj readFromData:data];
 	return [obj autorelease];

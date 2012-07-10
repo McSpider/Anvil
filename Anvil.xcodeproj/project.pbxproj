@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE22495C15ABE03400AAA883 /* KBLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = AE22495B15ABE03400AAA883 /* KBLabel.m */; };
 		AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */; };
 		AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */ = {isa = PBXBuildFile; fileRef = AEEBE37F15A6AEFF009755CD /* NBT.txt */; };
 		AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF5387F15A13EE200E95CF3 /* Cocoa.framework */; };
@@ -22,6 +23,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AE22495A15ABE03400AAA883 /* KBLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBLabel.h; sourceTree = "<group>"; };
+		AE22495B15ABE03400AAA883 /* KBLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBLabel.m; sourceTree = "<group>"; };
 		AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBMenuOutlineView.h; sourceTree = "<group>"; };
 		AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBMenuOutlineView.m; sourceTree = "<group>"; };
 		AEEBE37F15A6AEFF009755CD /* NBT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NBT.txt; sourceTree = "<group>"; };
@@ -105,6 +108,8 @@
 				AEF538A015A13FFB00E95CF3 /* NBTContainer.m */,
 				AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */,
 				AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */,
+				AE22495A15ABE03400AAA883 /* KBLabel.h */,
+				AE22495B15ABE03400AAA883 /* KBLabel.m */,
 				AEF538A615A140C500E95CF3 /* NSData+CocoaDevAdditions.h */,
 				AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */,
 				AEF5389415A13EE200E95CF3 /* MyDocument.xib */,
@@ -194,6 +199,7 @@
 				AEF538A115A13FFB00E95CF3 /* NBTContainer.m in Sources */,
 				AEF538A815A140C500E95CF3 /* NSData+CocoaDevAdditions.m in Sources */,
 				AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */,
+				AE22495C15ABE03400AAA883 /* KBLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
