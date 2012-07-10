@@ -12,7 +12,7 @@
 
 
 #ifndef NBT_LOGGING
-#define NBT_LOGGING 1
+#define NBT_LOGGING 0
 #endif
 
 #if NBT_LOGGING
@@ -303,14 +303,14 @@
 	{
     NBTLog(@">> start byte array named %@", self.name);
 
-    NSArray *byteArray = [[NSArray alloc] init];
+    NSMutableArray *byteArray = [[NSMutableArray alloc] init];
     int arrayLength = [self intFromBytes:bytes offset:&offset];
     for (uint i = 0; i < arrayLength; i++) {
       NSNumber *byteV =  [[NSNumber alloc] initWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]];
-      byteArray = [byteArray arrayByAddingObject:byteV];
+      [byteArray addObject:byteV];
       [byteV release];
     }
-    self.arrayValue = [byteArray mutableCopy];
+    self.arrayValue = byteArray;
     
 		NBTLog(@"   array count=%i", (int)[self.arrayValue count]);
     NBTLog(@"<< end byte array %@", self.name);
@@ -319,14 +319,14 @@
 	{
     NBTLog(@">> start int array named %@", self.name);
     
-    NSArray *intArray = [[NSArray alloc] init];
+    NSMutableArray *intArray = [[NSMutableArray alloc] init];
     int arrayLength = [self intFromBytes:bytes offset:&offset];
     for (uint i = 0; i < arrayLength; i++) {
       NSNumber *intV =  [[NSNumber alloc] initWithInt:[self intFromBytes:bytes offset:&offset]];
-      intArray = [intArray arrayByAddingObject:intV];
+      [intArray addObject:intV];
       [intV release];
     }
-    self.arrayValue = [intArray mutableCopy];
+    self.arrayValue = intArray;
     
 		NBTLog(@"   array count=%i", (int)[self.arrayValue count]);
     NBTLog(@"<< end int array %@", self.name);

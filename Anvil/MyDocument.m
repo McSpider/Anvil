@@ -123,11 +123,11 @@
   [dataView reloadData];
 }
 
-- (IBAction)addRowBelow:(id)sender
+- (IBAction)addRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
   NBTType type = NBTTypeByte;
-  NSString *name = @"Row Below";
+  NSString *name = @"New Row";
   if (item.parent && item.parent.listType) {
     type = item.parent.listType;
     name = nil;
@@ -142,28 +142,6 @@
 
   [[[item parent] children] insertObject:newItem 
                                  atIndex:[[[item parent] children] indexOfObject:item]+1];
-  [dataView reloadData];
-}
-
-- (IBAction)addRowAbove:(id)sender
-{
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NBTType type = NBTTypeByte;
-  NSString *name = @"Row Above";
-  if (item.parent && item.parent.listType) {
-    type = item.parent.listType;
-    name = nil;
-  }
-  
-  NBTContainer *newItem;
-  if (item.parent && item.parent.listType == NBTTypeCompound)
-    newItem = [NBTContainer compoundWithName:name];
-  else
-    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
-  [newItem setParent:[item parent]];
-  
-  [[[item parent] children] insertObject:newItem 
-                      atIndex:[[[item parent] children] indexOfObject:item]];
   [dataView reloadData];
 }
 
@@ -387,7 +365,7 @@
         addChildMenuEnabled = YES;
     }
     
-    [[[outlineView menu] itemAtIndex:4] setEnabled:addChildMenuEnabled];
+    [[[outlineView menu] itemAtIndex:3] setEnabled:addChildMenuEnabled];
   }
 }
 

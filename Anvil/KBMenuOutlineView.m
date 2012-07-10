@@ -2,8 +2,8 @@
 //  KBMenuOutlineView.m
 //  Anvil
 //
-//  Created by Benjamin Kohler on 12/07/03.
-//  Copyright 2012 __MyCompanyName__. All rights reserved.
+//  Created by Ben K on 12/07/03.
+//  All code is provided under the New BSD license. Copyright 2012 Ben K
 //
 
 #import "KBMenuOutlineView.h"

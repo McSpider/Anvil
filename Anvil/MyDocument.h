@@ -21,8 +21,7 @@
 @property BOOL fileLoaded;
 
 - (IBAction)removeRow:(id)sender;
-- (IBAction)addRowBelow:(id)sender;
-- (IBAction)addRowAbove:(id)sender;
+- (IBAction)addRow:(id)sender;
 - (IBAction)addChild:(id)sender;
 - (IBAction)changeListType:(id)sender;
 
