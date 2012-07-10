@@ -26,6 +26,7 @@
   [child setParent:container];
   
   [container.children addObject:child];
+  [container setParent:fileData];
   [fileData.children addObject:container];
   self.fileLoaded = YES;
   
@@ -108,6 +109,7 @@
   self.fileLoaded = YES;
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
+  [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
 #pragma mark -
@@ -229,7 +231,7 @@
     if ([[fileData children] count] > 0)
       return YES;
   
-  if ([item isKindOfClass:[NBTContainer class]] && [[(NBTContainer *)item children] count] > 0)
+  if ([item isKindOfClass:[NBTContainer class]] && ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeList))
     return YES;
   
   return NO;
@@ -249,10 +251,10 @@
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
   if (item == nil) {
-    if ([tableColumn.identifier isEqualToString:@"name"])
+    if ([tableColumn.identifier intValue] == 0)
       return [fileData name];
     else if ([tableColumn.identifier intValue] == 2)
-      return [NSNumber numberWithInt:[(NBTContainer *)item type]-1];
+      return [NSNumber numberWithInt:[fileData type]-1];
     else if ([tableColumn.identifier intValue] == 1)
       return [fileData numberValue];
   }

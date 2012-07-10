@@ -194,29 +194,30 @@
 														<string key="NSKeyEquivalent"/>
 														<int key="NSPeriodicDelay">400</int>
 														<int key="NSPeriodicInterval">75</int>
-														<nil key="NSMenuItem"/>
+														<object class="NSMenuItem" key="NSMenuItem" id="464597446">
+															<reference key="NSMenu" ref="321362267"/>
+															<string key="NSTitle">Byte</string>
+															<string key="NSKeyEquiv"/>
+															<int key="NSMnemonicLoc">2147483647</int>
+															<int key="NSState">1</int>
+															<object class="NSCustomResource" key="NSOnImage" id="225154480">
+																<string key="NSClassName">NSImage</string>
+																<string key="NSResourceName">NSMenuCheckmark</string>
+															</object>
+															<object class="NSCustomResource" key="NSMixedImage" id="922264087">
+																<string key="NSClassName">NSImage</string>
+																<string key="NSResourceName">NSMenuMixedState</string>
+															</object>
+															<string key="NSAction">_popUpItemAction:</string>
+															<int key="NSTag">1</int>
+															<reference key="NSTarget" ref="450144525"/>
+														</object>
 														<bool key="NSMenuItemRespectAlignment">YES</bool>
 														<object class="NSMenu" key="NSMenu" id="321362267">
 															<string key="NSTitle">Type</string>
 															<object class="NSMutableArray" key="NSMenuItems">
 																<bool key="EncodedWithXMLCoder">YES</bool>
-																<object class="NSMenuItem" id="464597446">
-																	<reference key="NSMenu" ref="321362267"/>
-																	<string key="NSTitle">Byte</string>
-																	<string key="NSKeyEquiv"/>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<object class="NSCustomResource" key="NSOnImage" id="225154480">
-																		<string key="NSClassName">NSImage</string>
-																		<string key="NSResourceName">NSMenuCheckmark</string>
-																	</object>
-																	<object class="NSCustomResource" key="NSMixedImage" id="922264087">
-																		<string key="NSClassName">NSImage</string>
-																		<string key="NSResourceName">NSMenuMixedState</string>
-																	</object>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<int key="NSTag">1</int>
-																	<reference key="NSTarget" ref="450144525"/>
-																</object>
+																<reference ref="464597446"/>
 																<object class="NSMenuItem" id="308280327">
 																	<reference key="NSMenu" ref="321362267"/>
 																	<string key="NSTitle">Short</string>
@@ -541,11 +542,14 @@
 							<int key="NSTitlePosition">0</int>
 							<bool key="NSTransparent">NO</bool>
 							<double key="NSCornerRadius2">3</double>
-							<object class="NSColor" key="NSBorderColor2" id="905609161">
-								<int key="NSColorSpace">1</int>
-								<bytes key="NSRGB">MCAwIDAgMC4yAA</bytes>
+							<object class="NSColor" key="NSBorderColor2">
+								<int key="NSColorSpace">2</int>
+								<bytes key="NSRGB">MC42MDAwMDAwMjM4IDAuNjAwMDAwMDIzOCAwLjYwMDAwMDAyMzgAA</bytes>
 							</object>
-							<reference key="NSFillColor2" ref="905609161"/>
+							<object class="NSColor" key="NSFillColor2">
+								<int key="NSColorSpace">2</int>
+								<bytes key="NSRGB">MC44NzA1ODgzMDI2IDAuODcwNTg4MzAyNiAwLjg3MDU4ODMwMjYAA</bytes>
+							</object>
 						</object>
 					</object>
 					<string key="NSFrameSize">{650, 750}</string>
@@ -586,7 +590,7 @@
 					</object>
 					<object class="NSMenuItem" id="510819966">
 						<reference key="NSMenu" ref="409763016"/>
-						<string key="NSTitle">Add Row Below</string>
+						<string key="NSTitle">Add Row</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="225154480"/>
