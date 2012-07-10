@@ -301,13 +301,14 @@
     NBTLog(@">> start byte array named %@", self.name);
 
     NSArray *byteArray = [[NSArray alloc] init];
-    for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
+    int arrayLength = [self intFromBytes:bytes offset:&offset];
+    for (uint i = 0; i < arrayLength; i++) {
       NSNumber *byteV = [NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]];
       byteArray = [byteArray arrayByAddingObject:byteV];
     }
     self.arrayValue = [NSMutableArray arrayWithArray:byteArray];
     
-		NBTLog(@"   array=%@", self.arrayValue);
+		NBTLog(@"   array count=%i", (int)[self.arrayValue count]);
     NBTLog(@"<< end byte array %@", self.name);
 	}
   else if (self.type == NBTTypeIntArray)
@@ -315,13 +316,14 @@
     NBTLog(@">> start int array named %@", self.name);
     
     NSArray *intArray = [[NSArray alloc] init];
-    for (uint i = 0; i < [self intFromBytes:bytes offset:&offset]; i++) {
+    int arrayLength = [self intFromBytes:bytes offset:&offset];
+    for (uint i = 0; i < arrayLength; i++) {
       NSNumber *intV = [NSNumber numberWithInt:[self intFromBytes:bytes offset:&offset]];
       intArray = [intArray arrayByAddingObject:intV];
     }
     self.arrayValue = [NSMutableArray arrayWithArray:intArray];
     
-		NBTLog(@"   array=%@", self.arrayValue);
+		NBTLog(@"   array count=%i", (int)[self.arrayValue count]);
     NBTLog(@"<< end int array %@", self.name);
 	}
 	else
@@ -407,7 +409,6 @@
 	{
 		[self appendFloat:[self.numberValue floatValue] toData:data];
 	}
-  // FIXME - Fix byte/int array saving (loading should be fine)
   else if (self.type == NBTTypeByteArray)
 	{
     [self appendInt:(int)self.arrayValue.count toData:data];

@@ -324,7 +324,6 @@
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
 {
   return [self outlineView:outlineView isItemExpandable:item];
-  return NO;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
@@ -336,13 +335,9 @@
   
   if ([tableColumn.identifier intValue] == 1) {
     if ([item isKindOfClass:[NBTContainer class]])
-      if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+      if ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return NO;
-  }
-
-  
-  if ([self outlineView:outlineView isItemExpandable:item] && [tableColumn.identifier intValue] != 0)
-    return NO;
+  }  
   
   return YES;
 }
