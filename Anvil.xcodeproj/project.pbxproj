@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		AE08DE1815ACA3FA00C33EF5 /* UIController.m in Sources */ = {isa = PBXBuildFile; fileRef = AE08DE1715ACA3FA00C33EF5 /* UIController.m */; };
 		AE08DE2015ACB0E100C33EF5 /* Anvil.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE08DE1F15ACB0E100C33EF5 /* Anvil.icns */; };
+		AE0F272315ADF9BF006E6FB6 /* Folder.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272215ADF9BF006E6FB6 /* Folder.png */; };
+		AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272415ADFB8D006E6FB6 /* Array.png */; };
+		AE0F272715ADFBCA006E6FB6 /* List.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272615ADFBCA006E6FB6 /* List.png */; };
 		AE22495C15ABE03400AAA883 /* KBLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = AE22495B15ABE03400AAA883 /* KBLabel.m */; };
 		AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */; };
 		AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */ = {isa = PBXBuildFile; fileRef = AEEBE37F15A6AEFF009755CD /* NBT.txt */; };
@@ -28,6 +31,9 @@
 		AE08DE1615ACA3FA00C33EF5 /* UIController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIController.h; sourceTree = "<group>"; };
 		AE08DE1715ACA3FA00C33EF5 /* UIController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIController.m; sourceTree = "<group>"; };
 		AE08DE1F15ACB0E100C33EF5 /* Anvil.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Anvil.icns; sourceTree = SOURCE_ROOT; };
+		AE0F272215ADF9BF006E6FB6 /* Folder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Folder.png; sourceTree = "<group>"; };
+		AE0F272415ADFB8D006E6FB6 /* Array.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Array.png; sourceTree = "<group>"; };
+		AE0F272615ADFBCA006E6FB6 /* List.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = List.png; sourceTree = "<group>"; };
 		AE22495A15ABE03400AAA883 /* KBLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBLabel.h; sourceTree = "<group>"; };
 		AE22495B15ABE03400AAA883 /* KBLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBLabel.m; sourceTree = "<group>"; };
 		AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBMenuOutlineView.h; sourceTree = "<group>"; };
@@ -139,6 +145,9 @@
 			children = (
 				AEF5388715A13EE200E95CF3 /* Anvil-Info.plist */,
 				AE08DE1F15ACB0E100C33EF5 /* Anvil.icns */,
+				AE0F272215ADF9BF006E6FB6 /* Folder.png */,
+				AE0F272415ADFB8D006E6FB6 /* Array.png */,
+				AE0F272615ADFBCA006E6FB6 /* List.png */,
 				AEF5388815A13EE200E95CF3 /* InfoPlist.strings */,
 				AEF5388B15A13EE200E95CF3 /* main.m */,
 				AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */,
@@ -201,6 +210,9 @@
 				AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */,
 				AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */,
 				AE08DE2015ACB0E100C33EF5 /* Anvil.icns in Resources */,
+				AE0F272315ADF9BF006E6FB6 /* Folder.png in Resources */,
+				AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */,
+				AE0F272715ADFBCA006E6FB6 /* List.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

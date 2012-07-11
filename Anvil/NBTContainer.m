@@ -145,6 +145,8 @@
 - (void)readFromData:(NSData *)data
 {
 	data = [data gzipInflate];
+  if (!data)
+    return;
 	
 	const uint8_t *bytes = (const uint8_t *)[data bytes];
 	
@@ -235,9 +237,9 @@
 			}
 			else if (listType == NBTTypeCompound)
 			{
-        NBTContainer *compound = [NBTContainer compoundWithName:nil];
         NBTLog(@"      start list item, compound");
-				NSMutableArray *array = [NSMutableArray array];
+        NBTContainer *compound = [NBTContainer compoundWithName:nil];
+				compound.children = [NSMutableArray array];
 				while (1)
 				{
 					NBTType childType = bytes[offset]; // peek
@@ -249,11 +251,10 @@
 					NBTContainer *child = [[NBTContainer alloc] init];
 					[child populateWithBytes:bytes offset:&offset];
           child.parent = compound;
-					[array addObject:child];
+					[compound.children addObject:child];
 					[child release];
 				}
         
-        [compound.children addObjectsFromArray:array];
         compound.parent = self;
 				[self.children addObject:compound];
         NBTLog(@"      end list item, compound");

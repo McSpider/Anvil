@@ -235,6 +235,8 @@
       return [NSNumber numberWithInt:[fileData type]+1];
     else if ([tableColumn.identifier intValue] == 1)
       return [fileData numberValue];
+    else if ([tableColumn.identifier intValue] == 4)
+      return [NSImage imageNamed:@"Folder"];
   }
   
   if ([item isKindOfClass:[NBTContainer class]]) {
@@ -259,6 +261,15 @@
       }
       else
         return [(NBTContainer *)item numberValue];
+    }
+    // Image
+    else if ([tableColumn.identifier intValue] == 4) {
+      if ([(NBTContainer *)item type] == NBTTypeCompound)
+        return [NSImage imageNamed:@"Folder"];
+      else if ([(NBTContainer *)item type] == NBTTypeList)
+        return [NSImage imageNamed:@"List"];
+      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+        return [NSImage imageNamed:@"Array"];
     }
   }  
   return nil;
@@ -312,7 +323,8 @@
     }
     // Type
     else if ([tableColumn.identifier intValue] == 2) {
-        [(NBTContainer *)item setType:[(NSNumber *)object intValue]-1];
+      [(NBTContainer *)item setType:[(NSNumber *)object intValue]-1];
+      [dataView reloadItem:item reloadChildren:YES];
     }
     // Key
     else if ([tableColumn.identifier intValue] == 0) {
@@ -321,13 +333,16 @@
   }
 }
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
+/*- (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
 {
   return [self outlineView:outlineView isItemExpandable:item];
-}
+}*/
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
+  if ([tableColumn.identifier intValue] == 4)
+    return NO;
+  
   if ([tableColumn.identifier intValue] == 0 || [tableColumn.identifier intValue] == 2) {
       if ([item isKindOfClass:[NBTContainer class]])
         return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
@@ -380,15 +395,15 @@
         NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
         [listTypeCell setBordered:NO];
         NSMenu *aMenu = [typeMenu copy];
-        [listTypeCell setMenu:aMenu];
         [[aMenu itemAtIndex:0] setTitle:@"List Type"];
         [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
         [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
         [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
-        for (NSMenuItem *mItem in [[listTypeCell menu] itemArray]) {
+        for (NSMenuItem *mItem in [aMenu itemArray]) {
           [mItem setTarget:self];
           [mItem setAction:@selector(changeListType:)];
         }
+        [listTypeCell setMenu:aMenu];
         [aMenu release];
         return [listTypeCell autorelease];
       }
