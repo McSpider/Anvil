@@ -9,29 +9,29 @@
 #import <Cocoa/Cocoa.h>
 
 typedef enum {
-	NBTTypeEnd = 0,
-	NBTTypeByte = 1,
-	NBTTypeShort = 2,
-	NBTTypeInt = 3,
-	NBTTypeLong = 4,
-	NBTTypeFloat = 5,
-	NBTTypeDouble = 6,
-	NBTTypeByteArray = 7,
-	NBTTypeString = 8,
-	NBTTypeList = 9,
-	NBTTypeCompound = 10,
+  NBTTypeEnd = 0,
+  NBTTypeByte = 1,
+  NBTTypeShort = 2,
+  NBTTypeInt = 3,
+  NBTTypeLong = 4,
+  NBTTypeFloat = 5,
+  NBTTypeDouble = 6,
+  NBTTypeByteArray = 7,
+  NBTTypeString = 8,
+  NBTTypeList = 9,
+  NBTTypeCompound = 10,
   NBTTypeIntArray = 11,
 } NBTType;
 
 
 @interface NBTContainer : NSObject {
-	NSString *name;
-	NSMutableArray *children;
-	NBTType type;
-	NSString *stringValue;
-	NSNumber *numberValue;
+  NSString *name;
+  NSMutableArray *children;
+  NBTType type;
+  NSString *stringValue;
+  NSNumber *numberValue;
   NSMutableArray *arrayValue;
-	NBTType listType;
+  NBTType listType;
   
   NBTContainer *parent;
 }

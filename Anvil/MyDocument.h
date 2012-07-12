@@ -22,6 +22,7 @@
 
 - (IBAction)removeRow:(id)sender;
 - (IBAction)addRow:(id)sender;
+- (IBAction)duplicateRow:(id)sender;
 - (IBAction)addChild:(id)sender;
 - (IBAction)changeListType:(id)sender;
 

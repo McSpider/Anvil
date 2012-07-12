@@ -76,16 +76,8 @@
   If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
   */
   
-  /*
-  [fileData release];
-  fileData = [[NBTContainer nbtContainerWithData:data] retain];
-  [dataView reloadData];
-  */
-  [fileData release];
-  fileData = [[NBTContainer alloc] init];
   self.fileLoaded = NO;
   [self performSelectorInBackground:@selector(loadData:) withObject:data];
-  
   
   if (outError) {
       *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
@@ -145,13 +137,22 @@
   [dataView reloadData];
 }
 
+- (IBAction)duplicateRow:(id)sender
+{
+  // TODO - Don't just add a pointer to the same object :P
+  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  [[[item parent] children] insertObject:item
+                                 atIndex:[[[item parent] children] indexOfObject:item]+1];
+  [dataView reloadData];
+}
+
 - (IBAction)addChild:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NBTType type = NBTTypeByte;
+  NBTType childType = NBTTypeByte;
   NSString *name = @"Child";
   if (item.listType) {
-    type = item.listType;
+    childType = item.listType;
     name = nil;
   }
   
@@ -159,12 +160,11 @@
   if (item.listType == NBTTypeCompound)
     newItem = [NBTContainer compoundWithName:name];
   else
-    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
+    newItem = [NBTContainer containerWithName:name type:childType numberValue:[NSNumber numberWithInt:1]];
   [newItem setParent:item];
 
   [[item children] addObject:newItem];
-  [dataView reloadData];
-  
+  [dataView reloadItem:item reloadChildren:YES];
   [dataView expandItem:item];
 }
 
@@ -229,41 +229,38 @@
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
   if (item == nil) {
-    if ([tableColumn.identifier intValue] == 0)
+    if ([tableColumn.identifier isEqualToString:@"Key"])
       return [fileData name];
-    else if ([tableColumn.identifier intValue] == 2)
+    else if ([tableColumn.identifier isEqualToString:@"Type"])
       return [NSNumber numberWithInt:[fileData type]+1];
-    else if ([tableColumn.identifier intValue] == 1)
+    else if ([tableColumn.identifier isEqualToString:@"Value"])
       return [fileData numberValue];
-    else if ([tableColumn.identifier intValue] == 4)
+    else if ([tableColumn.identifier isEqualToString:@"Icon"])
       return [NSImage imageNamed:@"Folder"];
   }
   
   if ([item isKindOfClass:[NBTContainer class]]) {
-    // Key
-    if ([tableColumn.identifier intValue] == 0) {
+    if ([tableColumn.identifier isEqualToString:@"Key"]) {
       if ([[(NBTContainer *)item parent] type] == NBTTypeList)
         return @"List Item";
       return [(NBTContainer *)item name];
     }
-    // Type
-    else if ([tableColumn.identifier intValue] == 2) {
+    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
       return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
     }
-    // Value
-    else if ([tableColumn.identifier intValue] == 1) {
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeString)
         return [(NBTContainer *)item stringValue];
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
-      else if ([(NBTContainer *)item type] == NBTTypeList) {
+      else if ([(NBTContainer *)item type] == NBTTypeList)
         return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
-      }
+      else if ([(NBTContainer *)item type] == NBTTypeCompound)
+        return nil;
       else
         return [(NBTContainer *)item numberValue];
     }
-    // Image
-    else if ([tableColumn.identifier intValue] == 4) {
+    else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
       if ([(NBTContainer *)item type] == NBTTypeCompound)
         return [NSImage imageNamed:@"Folder"];
       else if ([(NBTContainer *)item type] == NBTTypeList)
@@ -280,8 +277,7 @@
   NSString *stringValue = (NSString *)object;
   
   if ([item isKindOfClass:[NBTContainer class]]) {
-    // Value
-    if ([tableColumn.identifier intValue] == 1) {
+    if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
         [(NBTContainer *)item setListType:[(NSNumber *)object intValue]-1];
         return;
@@ -321,13 +317,15 @@
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithFloat:[stringValue floatValue]]];
       }      
     }
-    // Type
-    else if ([tableColumn.identifier intValue] == 2) {
-      [(NBTContainer *)item setType:[(NSNumber *)object intValue]-1];
+    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
+      int newType = [(NSNumber *)object intValue] - 1;
+      
+      [(NBTContainer *)item setType:newType];
+      if (newType == NBTTypeList)
+        [(NBTContainer *)item setListType:NBTTypeByte];      
       [dataView reloadItem:item reloadChildren:YES];
     }
-    // Key
-    else if ([tableColumn.identifier intValue] == 0) {
+    else if ([tableColumn.identifier isEqualToString:@"Key"]) {
       [(NBTContainer *)item setName:(NSString *)object];
     }
   }
@@ -340,15 +338,15 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-  if ([tableColumn.identifier intValue] == 4)
+  if ([tableColumn.identifier isEqualToString:@"Icon"])
     return NO;
   
-  if ([tableColumn.identifier intValue] == 0 || [tableColumn.identifier intValue] == 2) {
+  if ([tableColumn.identifier isEqualToString:@"Key"] || [tableColumn.identifier isEqualToString:@"Type"]) {
       if ([item isKindOfClass:[NBTContainer class]])
         return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
   }
   
-  if ([tableColumn.identifier intValue] == 1) {
+  if ([tableColumn.identifier isEqualToString:@"Value"]) {
     if ([item isKindOfClass:[NBTContainer class]])
       if ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return NO;
@@ -380,7 +378,7 @@
         addChildMenuEnabled = YES;
     }
     
-    [[[outlineView menu] itemAtIndex:3] setEnabled:addChildMenuEnabled];
+    [[[outlineView menu] itemAtIndex:4] setEnabled:addChildMenuEnabled];
   }
 }
 
@@ -389,7 +387,7 @@
   if (tableColumn) {
     BOOL isContainer = [item isKindOfClass:[NBTContainer class]];
     
-    if ([tableColumn.identifier intValue] == 1) {
+    if ([tableColumn.identifier isEqualToString:@"Value"]) {
       // Change list value field to a listType popup
       if (isContainer && [(NBTContainer *)item type] == NBTTypeList) {
         NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
@@ -414,7 +412,7 @@
         return [dataCell autorelease];
       }
     }
-    else if ([tableColumn.identifier intValue] == 2) {
+    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
       // Disable the type popup for list items
       if (isContainer && [[(NBTContainer *)item parent] type] == NBTTypeList) {
         NSCell *dataCell = [[tableColumn dataCell] copy];
