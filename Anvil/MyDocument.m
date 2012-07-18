@@ -22,7 +22,8 @@
   // Default data
   NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
   NBTContainer *child;
-  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte numberValue:[NSNumber numberWithInt:1]];
+  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte];
+  [child setNumberValue:[NSNumber numberWithInt:1]];
   [child setParent:container];
   
   [container.children addObject:child];
@@ -126,10 +127,13 @@
   }
   
   NBTContainer *newItem;
-  if (item.parent && item.parent.listType == NBTTypeCompound)
+  if (item.parent && item.parent.listType == NBTTypeCompound) {
     newItem = [NBTContainer compoundWithName:name];
-  else
-    newItem = [NBTContainer containerWithName:name type:type numberValue:[NSNumber numberWithInt:1]];
+  }
+  else {
+    newItem = [NBTContainer containerWithName:name type:type];
+    [newItem setNumberValue:[NSNumber numberWithInt:1]];
+  }
   [newItem setParent:[item parent]];
 
   [[[item parent] children] insertObject:newItem 
@@ -139,9 +143,8 @@
 
 - (IBAction)duplicateRow:(id)sender
 {
-  // TODO - Don't just add a pointer to the same object :P
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  [[[item parent] children] insertObject:item
+  [[[item parent] children] insertObject:[[item copy] autorelease]
                                  atIndex:[[[item parent] children] indexOfObject:item]+1];
   [dataView reloadData];
 }
@@ -157,10 +160,13 @@
   }
   
   NBTContainer *newItem;
-  if (item.listType == NBTTypeCompound)
+  if (item.listType == NBTTypeCompound) {
     newItem = [NBTContainer compoundWithName:name];
-  else
-    newItem = [NBTContainer containerWithName:name type:childType numberValue:[NSNumber numberWithInt:1]];
+  }
+  else {
+    newItem = [NBTContainer containerWithName:name type:childType];
+    [newItem setNumberValue:[NSNumber numberWithInt:1]];
+  }
   [newItem setParent:item];
 
   [[item children] addObject:newItem];
@@ -268,7 +274,7 @@
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return [NSImage imageNamed:@"Array"];
     }
-  }  
+  }
   return nil;
 }
 
@@ -288,34 +294,27 @@
       NSNumber *myNumber = [formatter numberFromString:stringValue];
       [formatter release];
       
-      if ([(NBTContainer *)item type] == NBTTypeString)
-      {
+      if ([(NBTContainer *)item type] == NBTTypeString) {
         [(NBTContainer *)item setStringValue:stringValue];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeLong)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeLong) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedLongLong:[stringValue unsignedLongLongValue]]];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeShort)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeShort) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithShort:[stringValue shortValue]]];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeInt)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeInt) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithInt:[stringValue intValue]]];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeByte)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeByte) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedChar:[stringValue unsignedCharValue]]];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeDouble)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeDouble) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithDouble:[stringValue doubleValue]]];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeFloat)
-      {
+      else if ([(NBTContainer *)item type] == NBTTypeFloat) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithFloat:[stringValue floatValue]]];
-      }      
+      }
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {
       int newType = [(NSNumber *)object intValue] - 1;

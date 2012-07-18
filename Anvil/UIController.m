@@ -43,6 +43,7 @@
 	
 	[themeFrame addSubview:accessoryView];	
 	[versionField setStringValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+  [versionField setTextColor:[NSColor colorWithCalibratedRed:0.250 green:0.000 blue:0.000 alpha:1.000]];
 }
 
 

@@ -60,6 +60,7 @@
   
   return self;
 }
+
 - (void)dealloc
 {
   [name release];
@@ -70,10 +71,26 @@
   [super dealloc];
 }
 
+- (id)copyWithZone:(NSZone *)zone
+{
+	NBTContainer *instanceCopy = [[NBTContainer allocWithZone:zone] init];
+  
+	instanceCopy.name = [[self.name copy] autorelease];
+	instanceCopy.children = [[[NSMutableArray alloc] initWithArray:self.children copyItems:YES] autorelease];
+  instanceCopy.type = self.type;
+	instanceCopy.stringValue = [[self.stringValue copy] autorelease];
+  instanceCopy.numberValue = [[self.numberValue copy] autorelease];
+	instanceCopy.arrayValue = [[[NSArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
+  instanceCopy.listType = self.listType;
+  instanceCopy.parent = self.parent;
+  
+	return instanceCopy;
+}
+
 
 - (NSString *)description
 {
-  return [NSString stringWithFormat:@"<%@ %p name=%@ type=%i children=%i", NSStringFromClass([self class]), self, self.name, self.type, self.children.count];
+  return [NSString stringWithFormat:@"<%@ %p name=%@ type=%i list type=%i children=%i", NSStringFromClass([self class]), self, self.name, self.type, self.listType, self.children.count];
 }
 
 - (NSString *)containerType
@@ -105,12 +122,11 @@
 }
 
 
-+ (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType numberValue:(NSNumber *)theNumber
++ (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType
 {
   NBTContainer *cont = [[[NBTContainer alloc] init] autorelease];
   cont.name = theName;
   cont.type = theType;
-  cont.numberValue = theNumber;
   return cont;
 }
 
@@ -221,17 +237,53 @@
         uint32_t i = [self intFromBytes:bytes offset:&offset];
         float f = *((float*)&i);
         NSNumber *num = [NSNumber numberWithFloat:f];
-        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType numberValue:num];
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = num;
         listItem.parent = self;
         [self.children addObject:listItem];
         NBTLog(@"   list item, float=%f", f);
       }
+      
+      else if (self.listType == NBTTypeString)
+      {        
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.stringValue = [self stringFromBytes:bytes offset:&offset];
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        NBTLog(@"   name=%@ string=%@", self.name, self.stringValue);
+      }
+      else if (self.listType == NBTTypeLong)
+      {
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = [NSNumber numberWithUnsignedLongLong:[self longFromBytes:bytes offset:&offset]];
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        NBTLog(@"   name=%@ long=%qu", self.name, [self.numberValue unsignedLongLongValue]);
+      }
+      else if (self.listType == NBTTypeInt)
+      {
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = [NSNumber numberWithInt:[self intFromBytes:bytes offset:&offset]];
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        NBTLog(@"   name=%@ int=0x%x", self.name, [self.numberValue unsignedIntValue]);
+      }
+      else if (self.listType == NBTTypeShort)
+      {
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = [NSNumber numberWithShort:[self shortFromBytes:bytes offset:&offset]];
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        NBTLog(@"   name=%@ short=0x%x", self.name, [self.numberValue unsignedShortValue]);
+      }
+      
       else if (self.listType == NBTTypeDouble)
       {
         uint64_t l = [self longFromBytes:bytes offset:&offset];
         double d = *((double*)&l);
         NSNumber *num = [NSNumber numberWithDouble:d];
-        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType numberValue:num];
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = num;
         listItem.parent = self;
         [self.children addObject:listItem];
         NBTLog(@"   list item, double=%lf", d);
@@ -239,7 +291,8 @@
       else if (self.listType == NBTTypeByte)
       {
         NSNumber *num = [NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]];
-        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType numberValue:num];
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.numberValue = num;
         listItem.parent = self;
         [self.children addObject:listItem];
         NBTLog(@"   list item, byte=0x%x", [num unsignedCharValue]);
@@ -302,7 +355,7 @@
     self.numberValue = [NSNumber numberWithUnsignedChar:[self byteFromBytes:bytes offset:&offset]];
     NBTLog(@"   name=%@ byte=0x%x", self.name, [self.numberValue unsignedCharValue]);
   }
-  else if (listType == NBTTypeDouble)
+  else if (self.listType == NBTTypeDouble)
   {
     uint64_t l = [self longFromBytes:bytes offset:&offset];
     double d = *((double*)&l);
@@ -385,32 +438,54 @@
     for (NBTContainer *item in self.children)
     {
       // FIXME - Compounds in lists start to become rooted deeper and deeper after each save.
-      if (listType == NBTTypeCompound)
+      if (self.listType == NBTTypeCompound)
       {
-        NBTLog(@"   start list item, compound");
+        NBTLog(@"   start list item, compound");        
         [data appendData:[item data]];
         uint8_t t = NBTTypeEnd;
         [data appendBytes:&t length:1];
         NBTLog(@"   end list item, compound");
       }
-      else if (listType == NBTTypeFloat)
+      
+      else if (self.listType == NBTTypeString)
+      {        
+        NBTLog(@"   list item, string=%@", item.stringValue);
+        [self appendString:item.stringValue toData:data];
+      }
+      else if (self.listType == NBTTypeLong)
+      {
+        NBTLog(@"   list item, long=%qu", [item.numberValue unsignedLongLongValue]);
+        [self appendLong:[item.numberValue unsignedLongLongValue] toData:data];
+      }
+      else if (self.listType == NBTTypeInt)
+      {
+        NBTLog(@"   list item, int=0x%x", [item.numberValue unsignedIntValue]);
+        [self appendInt:[item.numberValue intValue] toData:data];
+      }
+      else if (self.listType == NBTTypeShort)
+      {
+        NBTLog(@"   list item, short=0x%x", [item.numberValue unsignedShortValue]);
+        [self appendShort:[item.numberValue shortValue] toData:data];
+      }
+      
+      else if (self.listType == NBTTypeFloat)
       {
         NBTLog(@"   list item, float=%f", [item.numberValue floatValue]);
         [self appendFloat:[item.numberValue floatValue] toData:data];
       }
-      else if (listType == NBTTypeDouble)
+      else if (self.listType == NBTTypeDouble)
       {
         NBTLog(@"   list item, double=%lf", [item.numberValue doubleValue]);
         [self appendDouble:[item.numberValue doubleValue] toData:data];
       }
-      else if (listType == NBTTypeByte)
+      else if (self.listType == NBTTypeByte)
       {
         NBTLog(@"   list item, byte=0x%x", [item.numberValue unsignedCharValue]);
         [self appendByte:[item.numberValue unsignedCharValue] toData:data];
       }
       else
       {
-        NBTLog(@"Unhandled list type: %d", listType);
+        NBTLog(@"Unhandled list type: %d", self.listType);
       }
     }
     
