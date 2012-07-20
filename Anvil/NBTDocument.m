@@ -1,14 +1,14 @@
 //
-//  MyDocument.m
+//  NBTDocument.m
 //  Anvil
 //
 //  Created by Ben K on 12/07/01.
 //  All code is provided under the New BSD license. Copyright 2011 Ben K.
 //
 
-#import "MyDocument.h"
+#import "NBTDocument.h"
 
-@implementation MyDocument
+@implementation NBTDocument
 @synthesize fileData;
 @synthesize fileLoaded;
 
@@ -45,7 +45,7 @@
 {
   // Override returning the nib file name of the document
   // If you need to use a subclass of NSWindowController or if your document supports multiple NSWindowControllers, you should remove this method and override -makeWindowControllers instead.
-  return @"MyDocument";
+  return @"NBTDocument";
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController
@@ -77,8 +77,10 @@
   If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
   */
   
-  self.fileLoaded = NO;
-  [self performSelectorInBackground:@selector(loadData:) withObject:data];
+  if ([typeName isEqualToString:@"NBT.dat"]) {
+    self.fileLoaded = NO;
+    [self performSelectorInBackground:@selector(loadData:) withObject:data];
+  }
   
   if (outError) {
       *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
@@ -94,10 +96,11 @@
 - (void)loadData:(NSData *)data
 {
   NBTContainer *container = [[NBTContainer alloc] init];
-	[container readFromData:data];
+  [container readFromData:data];
   
   [fileData release];
   fileData = [container retain];
+  [container release];
   
   self.fileLoaded = YES;
   [dataView reloadData];
@@ -111,7 +114,10 @@
 - (IBAction)removeRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  [[[item parent] children] removeObject:item];
+  NSMutableArray *children = [[item parent] children];
+  NSInteger rowIndex = [children indexOfObject:item];
+  
+  [children removeObjectAtIndex:rowIndex];
   
   [dataView reloadData];
 }
@@ -297,23 +303,11 @@
       if ([(NBTContainer *)item type] == NBTTypeString) {
         [(NBTContainer *)item setStringValue:stringValue];
       }
-      else if ([(NBTContainer *)item type] == NBTTypeLong) {
+      else if ([(NBTContainer *)item type] == NBTTypeLong || [(NBTContainer *)item type] == NBTTypeShort ||
+               [(NBTContainer *)item type] == NBTTypeInt || [(NBTContainer *)item type] == NBTTypeInt ||
+               [(NBTContainer *)item type] == NBTTypeByte || [(NBTContainer *)item type] == NBTTypeDouble ||
+               [(NBTContainer *)item type] == NBTTypeFloat) {
         [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedLongLong:[stringValue unsignedLongLongValue]]];
-      }
-      else if ([(NBTContainer *)item type] == NBTTypeShort) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithShort:[stringValue shortValue]]];
-      }
-      else if ([(NBTContainer *)item type] == NBTTypeInt) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithInt:[stringValue intValue]]];
-      }
-      else if ([(NBTContainer *)item type] == NBTTypeByte) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedChar:[stringValue unsignedCharValue]]];
-      }
-      else if ([(NBTContainer *)item type] == NBTTypeDouble) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithDouble:[stringValue doubleValue]]];
-      }
-      else if ([(NBTContainer *)item type] == NBTTypeFloat) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithFloat:[stringValue floatValue]]];
       }
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {

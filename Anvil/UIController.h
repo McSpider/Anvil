@@ -6,6 +6,9 @@
 //  All code is provided under the New BSD license. Copyright 2011 Ben K
 //
 
+// Copyright Matt Patenaude - http://13bold.com/tutorials/accessory-view/
+
+
 #import <Cocoa/Cocoa.h>
 
 @interface UIController : NSObject {

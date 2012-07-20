@@ -10,13 +10,11 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>dat</string>
-				<string>mcr</string>
-				<string>mca</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string></string>
 			<key>CFBundleTypeName</key>
-			<string>DocumentType</string>
+			<string>NBT.dat</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -24,7 +22,39 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
-			<string>MyDocument</string>
+			<string>NBTDocument</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mcr</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>NBT.mcr</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>????</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>NSDocumentClass</key>
+			<string>NBTDocument</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mca</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>NBT.mca</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>????</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>NSDocumentClass</key>
+			<string>NBTDocument</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>

@@ -1,5 +1,5 @@
 //
-//  MyDocument.h
+//  NBTDocument.h
 //  Anvil
 //
 //  Created by Ben K on 12/07/01.
@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "NBTContainer.h"
 
-@interface MyDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource> {
+@interface NBTDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource> {
   NBTContainer *fileData;
   IBOutlet NSMenu *typeMenu;
   
