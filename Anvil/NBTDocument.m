@@ -8,6 +8,13 @@
 
 #import "NBTDocument.h"
 
+
+@interface NBTDocument ()
+- (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container;
+- (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index;
+@end
+
+
 @implementation NBTDocument
 @synthesize fileData;
 @synthesize fileLoaded;
@@ -17,18 +24,7 @@
   if (![super init])
     return nil;
   
-  fileData = [[NBTContainer compoundWithName:nil] retain];
-  
-  // Default data
-  NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
-  NBTContainer *child;
-  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte];
-  [child setNumberValue:[NSNumber numberWithInt:1]];
-  [child setParent:container];
-  
-  [container.children addObject:child];
-  [container setParent:fileData];
-  [fileData.children addObject:container];
+  fileData = [[NBTContainer compoundWithName:nil] retain];  
   self.fileLoaded = YES;
   
   return self;
@@ -52,6 +48,19 @@
 {
   [super windowControllerDidLoadNib:aController];
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
+  
+  // Default data
+  NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
+  NBTContainer *child;
+  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte];
+  [child setNumberValue:[NSNumber numberWithInt:1]];
+  [child setParent:container];
+  
+  [container.children addObject:child];
+  [container setParent:fileData];
+  [fileData.children addObject:container];
+
+  [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
@@ -102,6 +111,12 @@
   fileData = [container retain];
   [container release];
   
+  // Update UI in the main thread
+  [self performSelectorOnMainThread:@selector(dataLoaded) withObject:nil waitUntilDone:NO];  
+}
+
+- (void)dataLoaded
+{
   self.fileLoaded = YES;
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
@@ -114,17 +129,14 @@
 - (IBAction)removeRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NSMutableArray *children = [[item parent] children];
-  NSInteger rowIndex = [children indexOfObject:item];
-  
-  [children removeObjectAtIndex:rowIndex];
-  
-  [dataView reloadData];
+  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
+  [self removeItemAtIndex:rowIndex fromContainer:[item parent]];    
 }
 
 - (IBAction)addRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
   NBTType type = NBTTypeByte;
   NSString *name = @"New Row";
   if (item.parent && item.parent.listType) {
@@ -142,17 +154,14 @@
   }
   [newItem setParent:[item parent]];
 
-  [[[item parent] children] insertObject:newItem 
-                                 atIndex:[[[item parent] children] indexOfObject:item]+1];
-  [dataView reloadData];
+  [self addItem:newItem toContainer:[item parent] atIndex:rowIndex+1];      
 }
 
 - (IBAction)duplicateRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  [[[item parent] children] insertObject:[[item copy] autorelease]
-                                 atIndex:[[[item parent] children] indexOfObject:item]+1];
-  [dataView reloadData];
+  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
+  [self addItem:[[item copy] autorelease] toContainer:[item parent] atIndex:rowIndex+1];      
 }
 
 - (IBAction)addChild:(id)sender
@@ -175,7 +184,8 @@
   }
   [newItem setParent:item];
 
-  [[item children] addObject:newItem];
+  [self addItem:newItem toContainer:item atIndex:[[item children] count]];      
+  
   [dataView reloadItem:item reloadChildren:YES];
   [dataView expandItem:item];
 }
@@ -189,15 +199,37 @@
     for (NBTContainer *child in item.children) {
       child.type = item.listType;
     }
+    [dataView reloadItem:item reloadChildren:YES];
   }
   else if (item.parent && item.parent.type == NBTTypeList) {
     item.parent.listType = newType;
     for (NBTContainer *child in item.parent.children) {
       child.type = item.parent.listType;
     }
-  }
+    [dataView reloadItem:item.parent reloadChildren:YES];
+  }  
+}
+
+
+#pragma mark -
+#pragma mark Data methods
+
+- (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container
+{
+  [[[self undoManager] prepareWithInvocationTarget:dataView] reloadData];
+  [[[self undoManager] prepareWithInvocationTarget:self] addItem:[container.children objectAtIndex:index] toContainer:container atIndex:index];
   
-  [dataView reloadData];  
+  [container.children removeObjectAtIndex:index];
+  [dataView reloadData];
+}
+
+- (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index
+{
+  [[[self undoManager] prepareWithInvocationTarget:dataView] reloadData];
+  [[[self undoManager] prepareWithInvocationTarget:self] removeItemAtIndex:index fromContainer:container];
+  
+  [container.children insertObject:item atIndex:index];
+  [dataView reloadData];
 }
 
 
