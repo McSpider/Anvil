@@ -87,6 +87,35 @@
 	return instanceCopy;
 }
 
+- (id)initWithCoder:(NSCoder *)decoder
+{
+  if (!(self = [super init]))
+    return nil;
+
+  self.name = [decoder decodeObjectForKey:@"name"];
+  self.children = [decoder decodeObjectForKey:@"children"];
+  self.type = [decoder decodeIntForKey:@"type"];
+  self.stringValue = [decoder decodeObjectForKey:@"string_value"];
+  self.numberValue = [decoder decodeObjectForKey:@"number_value"];
+  self.arrayValue = [decoder decodeObjectForKey:@"array_value"];
+  self.listType = [decoder decodeIntForKey:@"list_type"];
+  self.parent = [decoder decodeObjectForKey:@"parent"];
+
+  return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{  
+  [coder encodeObject:self.name forKey:@"name"];
+  [coder encodeObject:self.children forKey:@"children"];
+  [coder encodeInt:self.type forKey:@"type"];
+  [coder encodeObject:self.stringValue forKey:@"string_value"];
+  [coder encodeObject:self.numberValue forKey:@"number_value"];
+  [coder encodeObject:self.arrayValue forKey:@"array_value"];
+  [coder encodeInt:self.listType forKey:@"list_type"];
+  [coder encodeObject:self.parent forKey:@"parent"];
+}
+
 
 - (NSString *)description
 {
@@ -161,9 +190,12 @@
 
 - (void)readFromData:(NSData *)data
 {
-  data = [data gzipInflate];
   if (!data)
     return;
+
+  NSData *uData = [data gzipInflate];
+  if (uData)
+    data = uData;
   
   const uint8_t *bytes = (const uint8_t *)[data bytes];
   

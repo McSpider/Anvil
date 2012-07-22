@@ -8,6 +8,8 @@
 
 #import "NBTDocument.h"
 
+#define NBTDragAndDropData @"NBTDragAndDropData"
+
 
 @interface NBTDocument ()
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container;
@@ -49,18 +51,7 @@
   [super windowControllerDidLoadNib:aController];
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
   
-  // Default data
-  NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
-  NBTContainer *child;
-  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte];
-  [child setNumberValue:[NSNumber numberWithInt:1]];
-  [child setParent:container];
-  
-  [container.children addObject:child];
-  [container setParent:fileData];
-  [fileData.children addObject:container];
-
-  [dataView expandItem:[fileData.children objectAtIndex:0]];
+  [dataView registerForDraggedTypes:[NSArray arrayWithObjects:NBTDragAndDropData, nil]];
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
@@ -139,19 +130,14 @@
   NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
   NBTType type = NBTTypeByte;
   NSString *name = @"New Row";
-  if (item.parent && item.parent.listType) {
+  if (item.parent && item.parent.type == NBTTypeList) {
     type = item.parent.listType;
     name = nil;
   }
   
   NBTContainer *newItem;
-  if (item.parent && item.parent.listType == NBTTypeCompound) {
-    newItem = [NBTContainer compoundWithName:name];
-  }
-  else {
-    newItem = [NBTContainer containerWithName:name type:type];
-    [newItem setNumberValue:[NSNumber numberWithInt:1]];
-  }
+  newItem = [NBTContainer containerWithName:name type:type];
+  [newItem setNumberValue:[NSNumber numberWithInt:1]];
   [newItem setParent:[item parent]];
 
   [self addItem:newItem toContainer:[item parent] atIndex:rowIndex+1];      
@@ -167,9 +153,12 @@
 - (IBAction)addChild:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  if (!item) {
+    item = fileData;
+  }
   NBTType childType = NBTTypeByte;
   NSString *name = @"Child";
-  if (item.listType) {
+  if (item.type == NBTTypeList) {
     childType = item.listType;
     name = nil;
   }
@@ -185,9 +174,6 @@
   [newItem setParent:item];
 
   [self addItem:newItem toContainer:item atIndex:[[item children] count]];      
-  
-  [dataView reloadItem:item reloadChildren:YES];
-  [dataView expandItem:item];
 }
 
 - (IBAction)changeListType:(id)sender
@@ -216,7 +202,6 @@
 
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container
 {
-  [[[self undoManager] prepareWithInvocationTarget:dataView] reloadData];
   [[[self undoManager] prepareWithInvocationTarget:self] addItem:[container.children objectAtIndex:index] toContainer:container atIndex:index];
   
   [container.children removeObjectAtIndex:index];
@@ -225,11 +210,11 @@
 
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index
 {
-  [[[self undoManager] prepareWithInvocationTarget:dataView] reloadData];
   [[[self undoManager] prepareWithInvocationTarget:self] removeItemAtIndex:index fromContainer:container];
   
   [container.children insertObject:item atIndex:index];
   [dataView reloadData];
+  [dataView expandItem:container];
 }
 
 
@@ -339,7 +324,7 @@
                [(NBTContainer *)item type] == NBTTypeInt || [(NBTContainer *)item type] == NBTTypeInt ||
                [(NBTContainer *)item type] == NBTTypeByte || [(NBTContainer *)item type] == NBTTypeDouble ||
                [(NBTContainer *)item type] == NBTTypeFloat) {
-        [(NBTContainer *)item setNumberValue:myNumber];//[NSNumber numberWithUnsignedLongLong:[stringValue unsignedLongLongValue]]];
+        [(NBTContainer *)item setNumberValue:myNumber];
       }
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {
@@ -380,11 +365,34 @@
   return YES;
 }
 
+
+// TODO - Drag & Drop
+- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
+{
+  return NSDragOperationEvery;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
+{
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
+  [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
+  [pasteboard setData:data forType:NBTDragAndDropData];
+  return YES;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
+{
+  return YES;
+}
+
+
 - (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row
 {
   if (row == -1) {
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:NO];
+    
+    [[[outlineView menu] itemAtIndex:4] setEnabled:YES];
   }
   else {
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])

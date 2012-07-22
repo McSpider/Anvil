@@ -51,7 +51,7 @@
 			<object class="NSWindowTemplate" id="275939982">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{0, 128}, {650, 771}}</string>
+				<string key="NSWindowRect">{{0, 107}, {650, 771}}</string>
 				<int key="NSWTFlags">1886912512</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -374,7 +374,6 @@
 																	<string key="NSTitle">Int Array</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSMnemonicLoc">2147483647</int>
-																	<int key="NSState">1</int>
 																	<reference key="NSOnImage" ref="575938422"/>
 																	<reference key="NSMixedImage" ref="174331512"/>
 																	<string key="NSAction">_popUpItemAction:</string>
@@ -385,7 +384,7 @@
 															<bool key="NSNoAutoenable">YES</bool>
 															<reference key="NSMenuFont" ref="26"/>
 														</object>
-														<int key="NSSelectedIndex">12</int>
+														<int key="NSSelectedIndex">2</int>
 														<int key="NSPreferredEdge">3</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
 														<bool key="NSAltersState">YES</bool>
