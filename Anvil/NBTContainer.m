@@ -93,13 +93,14 @@
     return nil;
 
   self.name = [decoder decodeObjectForKey:@"name"];
-  self.children = [decoder decodeObjectForKey:@"children"];
+  self.children = [[decoder decodeObjectForKey:@"children"] retain];
   self.type = [decoder decodeIntForKey:@"type"];
   self.stringValue = [decoder decodeObjectForKey:@"string_value"];
   self.numberValue = [decoder decodeObjectForKey:@"number_value"];
   self.arrayValue = [decoder decodeObjectForKey:@"array_value"];
   self.listType = [decoder decodeIntForKey:@"list_type"];
-  self.parent = [decoder decodeObjectForKey:@"parent"];
+  // This doesn't really work since we are getting a new reference and not the original pointer
+  self.parent = [[decoder decodeObjectForKey:@"parent"] retain];
 
   return self;
 }

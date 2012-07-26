@@ -471,7 +471,7 @@
 									<string key="NSFrame">{{1, 736}, {650, 15}}</string>
 									<reference key="NSSuperview" ref="543924771"/>
 									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView" ref="592358508"/>
+									<reference key="NSNextKeyView"/>
 									<string key="NSReuseIdentifierKey">_NS:1096</string>
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="543924771"/>
@@ -511,9 +511,9 @@
 						</object>
 						<object class="NSProgressIndicator" id="592358508">
 							<reference key="NSNextResponder" ref="568628114"/>
-							<int key="NSvFlags">1327</int>
+							<int key="NSvFlags">1313</int>
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
-							<string key="NSFrame">{{225, 4}, {200, 12}}</string>
+							<string key="NSFrame">{{546, 4}, {100, 12}}</string>
 							<reference key="NSSuperview" ref="568628114"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView"/>
@@ -1215,7 +1215,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100203</int>
+			<int key="maxID">100215</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1245,13 +1245,11 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addChild:</string>
 							<string>addRow:</string>
-							<string>changeListType:</string>
 							<string>duplicateRow:</string>
 							<string>removeRow:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1264,7 +1262,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addChild:</string>
 							<string>addRow:</string>
-							<string>changeListType:</string>
 							<string>duplicateRow:</string>
 							<string>removeRow:</string>
 						</object>
@@ -1276,10 +1273,6 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">addRow:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">changeListType:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

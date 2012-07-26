@@ -14,6 +14,16 @@
 @interface NBTDocument ()
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container;
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index;
+
+- (void)setItem:(NBTContainer *)item listType:(NBTType)type;
+- (void)setItem:(NBTContainer *)item type:(NBTType)type;
+
+- (void)setItem:(NBTContainer *)item stringValue:(NSString *)value;
+- (void)setItem:(NBTContainer *)item numberValue:(NSNumber *)value;
+- (void)setItem:(NBTContainer *)item name:(NSString *)name;
+
+- (void)loadDatData:(NSData *)data;
+
 @end
 
 
@@ -26,7 +36,19 @@
   if (![super init])
     return nil;
   
-  fileData = [[NBTContainer compoundWithName:nil] retain];  
+  fileData = [[NBTContainer compoundWithName:nil] retain];
+  
+  // Default data
+  NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
+  NBTContainer *child;
+  child = [NBTContainer containerWithName:@"Child" type:NBTTypeByte];
+  [child setNumberValue:[NSNumber numberWithInt:1]];
+  [child setParent:container];
+  
+  [container.children addObject:child];
+  [container setParent:fileData];
+  [fileData.children addObject:container];
+  
   self.fileLoaded = YES;
   
   return self;
@@ -52,6 +74,8 @@
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
   
   [dataView registerForDraggedTypes:[NSArray arrayWithObjects:NBTDragAndDropData, nil]];
+    
+  [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
@@ -79,7 +103,7 @@
   
   if ([typeName isEqualToString:@"NBT.dat"]) {
     self.fileLoaded = NO;
-    [self performSelectorInBackground:@selector(loadData:) withObject:data];
+    [self performSelectorInBackground:@selector(loadDatData:) withObject:data];
   }
   
   if (outError) {
@@ -93,7 +117,8 @@
     return NO;
 }
 
-- (void)loadData:(NSData *)data
+
+- (void)loadDatData:(NSData *)data
 {
   NBTContainer *container = [[NBTContainer alloc] init];
   [container readFromData:data];
@@ -113,6 +138,7 @@
   [dataView.window makeFirstResponder:dataView];
   [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
+
 
 #pragma mark -
 #pragma mark Actions
@@ -176,29 +202,9 @@
   [self addItem:newItem toContainer:item atIndex:[[item children] count]];      
 }
 
-- (IBAction)changeListType:(id)sender
-{
-  NBTType newType = (int)[sender tag];
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  if (item.type == NBTTypeList) {
-    item.listType = newType;
-    for (NBTContainer *child in item.children) {
-      child.type = item.listType;
-    }
-    [dataView reloadItem:item reloadChildren:YES];
-  }
-  else if (item.parent && item.parent.type == NBTTypeList) {
-    item.parent.listType = newType;
-    for (NBTContainer *child in item.parent.children) {
-      child.type = item.parent.listType;
-    }
-    [dataView reloadItem:item.parent reloadChildren:YES];
-  }  
-}
-
 
 #pragma mark -
-#pragma mark Data methods
+#pragma mark Undo-able data methods
 
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container
 {
@@ -215,6 +221,72 @@
   [container.children insertObject:item atIndex:index];
   [dataView reloadData];
   [dataView expandItem:container];
+}
+
+- (void)setItem:(NBTContainer *)item listType:(NBTType)type
+{
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item listType:item.type];
+  
+  if (item.type == NBTTypeList) {
+    item.listType = type;
+    for (NBTContainer *child in item.children) {
+      //child.type = item.listType;
+      [self setItem:child type:item.listType];
+    }
+    [dataView reloadItem:item reloadChildren:YES];
+  }
+  else if (item.parent && item.parent.type == NBTTypeList) {
+    item.parent.listType = type;
+    for (NBTContainer *child in item.parent.children) {
+      //child.type = item.parent.listType;
+      [self setItem:child type:item.parent.listType];
+    }
+    [dataView reloadItem:item.parent reloadChildren:YES];
+  }  
+}
+
+- (void)setItem:(NBTContainer *)item type:(NBTType)type
+{
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item type:item.type];
+  
+  [(NBTContainer *)item setType:type];
+  if (type == NBTTypeList) {
+    [(NBTContainer *)[[self undoManager] prepareWithInvocationTarget:item] setListType:item.listType];
+    [(NBTContainer *)item setListType:NBTTypeByte];
+    for (NBTContainer *child in item.children) {
+      //child.type = item.listType;
+      //[self setItem:child type:item.listType];
+      
+      [(NBTContainer *)[[self undoManager] prepareWithInvocationTarget:child] setType:child.type];
+      [(NBTContainer *)child setType:item.listType];
+
+    }
+  }
+  [dataView reloadItem:item reloadChildren:YES];
+}
+
+- (void)setItem:(NBTContainer *)item stringValue:(NSString *)value
+{
+  [[[self undoManager] prepareWithInvocationTarget:item] setItem:item stringValue:item.stringValue];
+  
+  [item setStringValue:value];
+  [dataView reloadItem:item];
+}
+
+- (void)setItem:(NBTContainer *)item numberValue:(NSNumber *)value
+{
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item numberValue:item.numberValue];
+  
+  [item setNumberValue:value];
+  [dataView reloadItem:item];
+}
+
+- (void)setItem:(NBTContainer *)item name:(NSString *)name
+{
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item name:item.name];
+  
+  [item setName:name];
+  [dataView reloadItem:item];
 }
 
 
@@ -308,7 +380,7 @@
   if ([item isKindOfClass:[NBTContainer class]]) {
     if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
-        [(NBTContainer *)item setListType:[(NSNumber *)object intValue]-1];
+        [self setItem:item listType:[(NSNumber *)object intValue] - 1];        
         return;
       }
       
@@ -318,33 +390,23 @@
       [formatter release];
       
       if ([(NBTContainer *)item type] == NBTTypeString) {
-        [(NBTContainer *)item setStringValue:stringValue];
+        [self setItem:item stringValue:stringValue];
       }
       else if ([(NBTContainer *)item type] == NBTTypeLong || [(NBTContainer *)item type] == NBTTypeShort ||
                [(NBTContainer *)item type] == NBTTypeInt || [(NBTContainer *)item type] == NBTTypeInt ||
                [(NBTContainer *)item type] == NBTTypeByte || [(NBTContainer *)item type] == NBTTypeDouble ||
                [(NBTContainer *)item type] == NBTTypeFloat) {
-        [(NBTContainer *)item setNumberValue:myNumber];
+        [self setItem:item numberValue:myNumber];
       }
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-      int newType = [(NSNumber *)object intValue] - 1;
-      
-      [(NBTContainer *)item setType:newType];
-      if (newType == NBTTypeList)
-        [(NBTContainer *)item setListType:NBTTypeByte];      
-      [dataView reloadItem:item reloadChildren:YES];
+      [self setItem:item type:[(NSNumber *)object intValue] - 1];      
     }
-    else if ([tableColumn.identifier isEqualToString:@"Key"]) {
-      [(NBTContainer *)item setName:(NSString *)object];
+    else if ([tableColumn.identifier isEqualToString:@"Key"]) {;
+      [self setItem:item name:stringValue];
     }
   }
 }
-
-/*- (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
-{
-  return [self outlineView:outlineView isItemExpandable:item];
-}*/
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
@@ -366,10 +428,15 @@
 }
 
 
-// TODO - Drag & Drop
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
-  return NSDragOperationEvery;
+  if ([(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
+    return NSDragOperationNone;
+  
+  if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
+    return NSDragOperationCopy;
+  
+  return NSDragOperationMove;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
@@ -382,6 +449,29 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
 {
+  NSPasteboard* pboard = [info draggingPasteboard];
+  NSData* rowData = [pboard dataForType:NBTDragAndDropData];
+  NSArray* itemArray = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+
+  NBTContainer *dropItem = [itemArray objectAtIndex:0];
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    // TODO - Properly handle copy/move
+    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask) {
+      NBTContainer *newItem = [dropItem copy];
+      [newItem setParent:item];
+      [[(NBTContainer *)item children] insertObject:newItem atIndex:index];
+      [dataView reloadItem:item reloadChildren:YES];
+    }
+    else {
+      [dropItem.parent.children removeObject:dropItem];
+      [dropItem setParent:item];
+      [[(NBTContainer *)item children] insertObject:dropItem atIndex:index];
+      
+      [dataView reloadItem:dropItem.parent reloadChildren:YES];
+      [dataView reloadItem:item reloadChildren:YES];
+    }    
+  }
+  
   return YES;
 }
 
@@ -430,10 +520,6 @@
         [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
         [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
         [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
-        for (NSMenuItem *mItem in [aMenu itemArray]) {
-          [mItem setTarget:self];
-          [mItem setAction:@selector(changeListType:)];
-        }
         [listTypeCell setMenu:aMenu];
         [aMenu release];
         return [listTypeCell autorelease];
