@@ -136,7 +136,9 @@
   self.fileLoaded = YES;
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
-  [dataView expandItem:[fileData.children objectAtIndex:0]];
+  
+  if ([fileData.children count] >= 1)
+    [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
 
@@ -427,7 +429,7 @@
   return YES;
 }
 
-
+/*
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
   if ([(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
@@ -441,6 +443,8 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
+  
+  draggedItems = [items retain];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
   [pasteboard setData:data forType:NBTDragAndDropData];
@@ -449,11 +453,13 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
 {
-  NSPasteboard* pboard = [info draggingPasteboard];
-  NSData* rowData = [pboard dataForType:NBTDragAndDropData];
-  NSArray* itemArray = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-
-  NBTContainer *dropItem = [itemArray objectAtIndex:0];
+  if (!draggedItems)
+    return NO;
+  
+  NBTContainer *dropItem = [draggedItems objectAtIndex:0];
+  if (!dropItem)
+    return NO;
+  
   if ([item isKindOfClass:[NBTContainer class]]) {
     // TODO - Properly handle copy/move
     if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask) {
@@ -469,12 +475,17 @@
       
       [dataView reloadItem:dropItem.parent reloadChildren:YES];
       [dataView reloadItem:item reloadChildren:YES];
-    }    
+    }
   }
   
   return YES;
 }
 
+- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
+{
+    [draggedItems release];
+}
+*/
 
 - (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row
 {

@@ -14,6 +14,7 @@
 		AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272415ADFB8D006E6FB6 /* Array.png */; };
 		AE0F272715ADFBCA006E6FB6 /* List.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272615ADFBCA006E6FB6 /* List.png */; };
 		AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */; };
+		AE8854FB15D0CF18004A9D63 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AE8854FA15D0CF18004A9D63 /* README.md */; };
 		AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */ = {isa = PBXBuildFile; fileRef = AEEBE37F15A6AEFF009755CD /* NBT.txt */; };
 		AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF5387F15A13EE200E95CF3 /* Cocoa.framework */; };
 		AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388815A13EE200E95CF3 /* InfoPlist.strings */; };
@@ -38,6 +39,7 @@
 		AE0F272615ADFBCA006E6FB6 /* List.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = List.png; sourceTree = "<group>"; };
 		AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBMenuOutlineView.h; sourceTree = "<group>"; };
 		AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBMenuOutlineView.m; sourceTree = "<group>"; };
+		AE8854FA15D0CF18004A9D63 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		AEEBE37F15A6AEFF009755CD /* NBT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NBT.txt; sourceTree = "<group>"; };
 		AEF5387B15A13EE200E95CF3 /* Anvil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anvil.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEF5387F15A13EE200E95CF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -49,7 +51,7 @@
 		AEF5388B15A13EE200E95CF3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Anvil-Prefix.pch"; sourceTree = "<group>"; };
 		AEF5388F15A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/Credits.html; sourceTree = "<group>"; };
-		AEF5389115A13EE200E95CF3 /* NBTDocument.h */ = {isa = PBXFileReference; path = NBTDocument.h; sourceTree = "<group>"; };
+		AEF5389115A13EE200E95CF3 /* NBTDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NBTDocument.h; sourceTree = "<group>"; };
 		AEF5389215A13EE200E95CF3 /* NBTDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NBTDocument.m; sourceTree = "<group>"; };
 		AEF5389515A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/NBTDocument.xib; sourceTree = "<group>"; };
 		AEF5389815A13EE200E95CF3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 		AEF5387015A13EE100E95CF3 = {
 			isa = PBXGroup;
 			children = (
+				AE8854FA15D0CF18004A9D63 /* README.md */,
 				AEF5388515A13EE200E95CF3 /* Anvil */,
 				AEF5387E15A13EE200E95CF3 /* Frameworks */,
 				AEF5387C15A13EE200E95CF3 /* Products */,
@@ -213,6 +216,7 @@
 				AE0F272315ADF9BF006E6FB6 /* Folder.png in Resources */,
 				AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */,
 				AE0F272715ADFBCA006E6FB6 /* List.png in Resources */,
+				AE8854FB15D0CF18004A9D63 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

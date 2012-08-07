@@ -87,37 +87,6 @@
 	return instanceCopy;
 }
 
-- (id)initWithCoder:(NSCoder *)decoder
-{
-  if (!(self = [super init]))
-    return nil;
-
-  self.name = [decoder decodeObjectForKey:@"name"];
-  self.children = [[decoder decodeObjectForKey:@"children"] retain];
-  self.type = [decoder decodeIntForKey:@"type"];
-  self.stringValue = [decoder decodeObjectForKey:@"string_value"];
-  self.numberValue = [decoder decodeObjectForKey:@"number_value"];
-  self.arrayValue = [decoder decodeObjectForKey:@"array_value"];
-  self.listType = [decoder decodeIntForKey:@"list_type"];
-  // This doesn't really work since we are getting a new reference and not the original pointer
-  self.parent = [[decoder decodeObjectForKey:@"parent"] retain];
-
-  return self;
-}
-
-- (void)encodeWithCoder:(NSCoder *)coder
-{  
-  [coder encodeObject:self.name forKey:@"name"];
-  [coder encodeObject:self.children forKey:@"children"];
-  [coder encodeInt:self.type forKey:@"type"];
-  [coder encodeObject:self.stringValue forKey:@"string_value"];
-  [coder encodeObject:self.numberValue forKey:@"number_value"];
-  [coder encodeObject:self.arrayValue forKey:@"array_value"];
-  [coder encodeInt:self.listType forKey:@"list_type"];
-  [coder encodeObject:self.parent forKey:@"parent"];
-}
-
-
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@ %p name=%@ type=%i list type=%i children=%i", NSStringFromClass([self class]), self, self.name, self.type, self.listType, self.children.count];
@@ -470,11 +439,13 @@
     
     for (NBTContainer *item in self.children)
     {
-      // FIXME - Compounds in lists start to become rooted deeper and deeper after each save.
       if (self.listType == NBTTypeCompound)
       {
-        NBTLog(@"   start list item, compound");        
-        [data appendData:[item data]];
+        NBTLog(@"   start list item, compound");
+        for (NBTContainer *i in item.children)
+        {
+          [data appendData:[i data]];
+        }
         uint8_t t = NBTTypeEnd;
         [data appendBytes:&t length:1];
         NBTLog(@"   end list item, compound");
