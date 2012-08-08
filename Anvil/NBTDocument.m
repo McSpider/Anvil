@@ -227,7 +227,7 @@
 
 - (void)setItem:(NBTContainer *)item listType:(NBTType)type
 {
-  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item listType:item.type];
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item listType:item.listType];
   
   if (item.type == NBTTypeList) {
     item.listType = type;
@@ -533,6 +533,7 @@
         [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
         [listTypeCell setMenu:aMenu];
         [aMenu release];
+        [listTypeCell selectItemWithTag:NBTTypeByte];
         return [listTypeCell autorelease];
       }
       // Disable byte/int array value fields
