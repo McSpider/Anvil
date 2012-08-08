@@ -74,7 +74,6 @@
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
   
   [dataView registerForDraggedTypes:[NSArray arrayWithObjects:NBTDragAndDropData, nil]];
-    
   [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
@@ -137,7 +136,7 @@
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
   
-  if ([fileData.children count] >= 1)
+  if ([fileData.children count] == 1)
     [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
@@ -269,7 +268,7 @@
 
 - (void)setItem:(NBTContainer *)item stringValue:(NSString *)value
 {
-  [[[self undoManager] prepareWithInvocationTarget:item] setItem:item stringValue:item.stringValue];
+  [[[self undoManager] prepareWithInvocationTarget:self] setItem:item stringValue:item.stringValue];
   
   [item setStringValue:value];
   [dataView reloadItem:item];
@@ -521,7 +520,15 @@
   if (tableColumn) {
     BOOL isContainer = [item isKindOfClass:[NBTContainer class]];
     
-    if ([tableColumn.identifier isEqualToString:@"Value"]) {
+    if ([tableColumn.identifier isEqualToString:@"Key"]) {
+      // Disable list item name fields
+      if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
+        NSCell *dataCell = [[tableColumn dataCell] copy];
+        [dataCell setEnabled:NO];
+        return [dataCell autorelease];
+      }
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
       // Change list value field to a listType popup
       if (isContainer && [(NBTContainer *)item type] == NBTTypeList) {
         NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
