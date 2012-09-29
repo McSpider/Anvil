@@ -74,7 +74,8 @@
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
   
   [dataView registerForDraggedTypes:[NSArray arrayWithObjects:NBTDragAndDropData, nil]];
-  [dataView expandItem:[fileData.children objectAtIndex:0]];
+  if ([fileData.children count] == 1)
+    [dataView expandItem:[fileData.children objectAtIndex:0]];
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
@@ -125,6 +126,9 @@
   [fileData release];
   fileData = [container retain];
   [container release];
+  
+  if (fileData.children.count == 0)
+    [[NSAlert alertWithMessageText:@"Failed to Open File" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"The file you atempted to load does not contain any loadable data."] runModal];
   
   // Update UI in the main thread
   [self performSelectorOnMainThread:@selector(dataLoaded) withObject:nil waitUntilDone:NO];  
@@ -258,6 +262,7 @@
       //child.type = item.listType;
       //[self setItem:child type:item.listType];
       
+      // CHECK
       [(NBTContainer *)[[self undoManager] prepareWithInvocationTarget:child] setType:child.type];
       [(NBTContainer *)child setType:item.listType];
 
@@ -292,7 +297,7 @@
 
 
 #pragma mark -
-#pragma mark TableView data source
+#pragma mark OutlineView data source
 
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {
@@ -428,64 +433,6 @@
   return YES;
 }
 
-/*
-- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
-{
-  if ([(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
-    return NSDragOperationNone;
-  
-  if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
-    return NSDragOperationCopy;
-  
-  return NSDragOperationMove;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
-{
-  
-  draggedItems = [items retain];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
-  [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
-  [pasteboard setData:data forType:NBTDragAndDropData];
-  return YES;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
-{
-  if (!draggedItems)
-    return NO;
-  
-  NBTContainer *dropItem = [draggedItems objectAtIndex:0];
-  if (!dropItem)
-    return NO;
-  
-  if ([item isKindOfClass:[NBTContainer class]]) {
-    // TODO - Properly handle copy/move
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask) {
-      NBTContainer *newItem = [dropItem copy];
-      [newItem setParent:item];
-      [[(NBTContainer *)item children] insertObject:newItem atIndex:index];
-      [dataView reloadItem:item reloadChildren:YES];
-    }
-    else {
-      [dropItem.parent.children removeObject:dropItem];
-      [dropItem setParent:item];
-      [[(NBTContainer *)item children] insertObject:dropItem atIndex:index];
-      
-      [dataView reloadItem:dropItem.parent reloadChildren:YES];
-      [dataView reloadItem:item reloadChildren:YES];
-    }
-  }
-  
-  return YES;
-}
-
-- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
-{
-    [draggedItems release];
-}
-*/
-
 - (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row
 {
   if (row == -1) {
@@ -566,5 +513,63 @@
 }
 
 
+#pragma mark -
+#pragma mark OutlineView drag & drop
+
+/*- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
+{
+  if ([(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
+    return NSDragOperationNone;
+  
+  if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
+    return NSDragOperationCopy;
+  
+  return NSDragOperationMove;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
+{
+  
+  draggedItems = [items retain];
+  //NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
+  [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
+  [pasteboard setData:nil forType:NBTDragAndDropData];
+  return YES;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
+{
+  if (!draggedItems)
+    return NO;
+  
+  NBTContainer *dropItem = [draggedItems objectAtIndex:0];
+  if (!dropItem)
+    return NO;
+  
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    // TODO - Properly handle copy/move
+    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask) {
+      NBTContainer *newItem = [dropItem copy];
+      [newItem setParent:item];
+      [[(NBTContainer *)item children] insertObject:newItem atIndex:index];
+      [dataView reloadItem:item reloadChildren:YES];
+    }
+    else {
+      [dropItem.parent.children removeObject:dropItem];
+      [dropItem setParent:item];
+      [[(NBTContainer *)item children] insertObject:dropItem atIndex:index];
+      
+      [dataView reloadItem:dropItem.parent reloadChildren:YES];
+      [dataView reloadItem:item reloadChildren:YES];
+    }
+  }
+  
+  return YES;
+}
+
+- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
+{
+  [draggedItems release];
+}*/
 
 @end

@@ -52,6 +52,7 @@
   if (![super init])
     return nil;
   
+  compressed = YES;
   self.name = nil;
   self.children = [NSMutableArray array];
   self.stringValue = nil;
@@ -164,8 +165,11 @@
     return;
 
   NSData *uData = [data gzipInflate];
-  if (uData)
+  if (uData) {
     data = uData;
+  } else {
+    compressed = NO;
+  }
   
   const uint8_t *bytes = (const uint8_t *)[data bytes];
   
@@ -175,6 +179,10 @@
 
 - (NSData *)writeData
 {
+  if (!compressed) {
+    return [self data];
+  }
+  
   return [[self data] gzipDeflate];
 }
 

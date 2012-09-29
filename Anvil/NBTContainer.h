@@ -34,6 +34,8 @@ typedef enum {
   NBTType listType;
   
   NBTContainer *parent;
+  
+  BOOL compressed;
 }
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, retain) NSMutableArray *children;
