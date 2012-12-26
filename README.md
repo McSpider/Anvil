@@ -1,12 +1,11 @@
 ### Anvil
 Minecraft NBT `.dat` file editor.
 
-![Anvil Screenshot](http://mcspider.oc.tc/files/Anvil.png)
+![Anvil Screenshot](http://mcspider.github.com/screenshots/Anvil.png)
   
   
 #### ToDo
 
-- Complete undo/redo support.  
 - Add a data validator.  
 - Finish row reorganizing code.  
 - Figure out how to load `.mca` and `.mcr` files.  
