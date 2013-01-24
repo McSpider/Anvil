@@ -23,8 +23,7 @@
 @property BOOL fileLoaded;
 
 - (IBAction)removeRow:(id)sender;
-- (IBAction)addRow:(id)sender;
+- (IBAction)insertRow:(id)sender;
 - (IBAction)duplicateRow:(id)sender;
-- (IBAction)addChild:(id)sender;
 
 @end

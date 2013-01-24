@@ -10,6 +10,7 @@
 
 @interface NSOutlineView (VariableCellColumnDelegate)
 - (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row;
+- (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent;
 @end
 
 @interface KBMenuOutlineView : NSOutlineView

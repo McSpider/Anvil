@@ -81,7 +81,7 @@
   instanceCopy.type = self.type;
 	instanceCopy.stringValue = [[self.stringValue copy] autorelease];
   instanceCopy.numberValue = [[self.numberValue copy] autorelease];
-	instanceCopy.arrayValue = [[[NSArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
+	instanceCopy.arrayValue = [[[NSMutableArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
   instanceCopy.listType = self.listType;
   instanceCopy.parent = self.parent;
   
@@ -90,7 +90,7 @@
 
 - (NSString *)description
 {
-  return [NSString stringWithFormat:@"<%@ %p name=%@ type=%i list type=%i children=%i", NSStringFromClass([self class]), self, self.name, self.type, self.listType, self.children.count];
+  return [NSString stringWithFormat:@"<%@ %p name=%@ type=%i list type=%i children=%li", NSStringFromClass([self class]), self, self.name, self.type, self.listType, self.children.count];
 }
 
 - (NSString *)containerType

@@ -185,6 +185,9 @@
 /* Begin PBXProject section */
 		AEF5387215A13EE100E95CF3 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+			};
 			buildConfigurationList = AEF5387515A13EE100E95CF3 /* Build configuration list for PBXProject "Anvil" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -281,6 +284,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -323,6 +327,7 @@
 		AEF5389D15A13EE200E95CF3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
 				INFOPLIST_FILE = "Anvil/Anvil-Info.plist";
@@ -334,6 +339,7 @@
 		AEF5389E15A13EE200E95CF3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
 				INFOPLIST_FILE = "Anvil/Anvil-Info.plist";

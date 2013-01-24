@@ -151,27 +151,61 @@
 - (IBAction)removeRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+  if (!item) {
+    item = [dataView itemAtRow:[dataView selectedRow]];
+  }
+
   NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
   [self removeItemAtIndex:rowIndex fromContainer:[item parent]];    
 }
 
-- (IBAction)addRow:(id)sender
+- (IBAction)insertRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
-  NBTType type = NBTTypeByte;
-  NSString *name = @"New Row";
-  if (item.parent && item.parent.type == NBTTypeList) {
-    type = item.parent.listType;
-    name = nil;
+  if (!item) {
+    item = [dataView itemAtRow:[dataView selectedRow]];
+  }
+  if (!item) {
+    item = fileData;
   }
   
-  NBTContainer *newItem;
-  newItem = [NBTContainer containerWithName:name type:type];
-  [newItem setNumberValue:[NSNumber numberWithInt:1]];
-  [newItem setParent:[item parent]];
-
-  [self addItem:newItem toContainer:[item parent] atIndex:rowIndex+1];      
+  if ([dataView isItemExpanded:item] || item == fileData) {
+    NBTType childType = NBTTypeByte;
+    NSString *name = @"Child";
+    if (item.type == NBTTypeList) {
+      childType = item.listType;
+      name = nil;
+    }
+    
+    NBTContainer *newItem;
+    if (item.listType == NBTTypeCompound) {
+      newItem = [NBTContainer compoundWithName:name];
+    }
+    else {
+      newItem = [NBTContainer containerWithName:name type:childType];
+      [newItem setNumberValue:[NSNumber numberWithInt:1]];
+    }
+    [newItem setParent:item];
+    
+    [self addItem:newItem toContainer:item atIndex:[[item children] count]];
+    
+  }
+  else {
+    NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
+    NBTType type = NBTTypeByte;
+    NSString *name = @"New Row";
+    if (item.parent && item.parent.type == NBTTypeList) {
+      type = item.parent.listType;
+      name = nil;
+    }
+    
+    NBTContainer *newItem;
+    newItem = [NBTContainer containerWithName:name type:type];
+    [newItem setNumberValue:[NSNumber numberWithInt:1]];
+    [newItem setParent:[item parent]];
+    
+    [self addItem:newItem toContainer:[item parent] atIndex:rowIndex+1];
+  }
 }
 
 - (IBAction)duplicateRow:(id)sender
@@ -179,32 +213,6 @@
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
   NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
   [self addItem:[[item copy] autorelease] toContainer:[item parent] atIndex:rowIndex+1];      
-}
-
-- (IBAction)addChild:(id)sender
-{
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  if (!item) {
-    item = fileData;
-  }
-  NBTType childType = NBTTypeByte;
-  NSString *name = @"Child";
-  if (item.type == NBTTypeList) {
-    childType = item.listType;
-    name = nil;
-  }
-  
-  NBTContainer *newItem;
-  if (item.listType == NBTTypeCompound) {
-    newItem = [NBTContainer compoundWithName:name];
-  }
-  else {
-    newItem = [NBTContainer containerWithName:name type:childType];
-    [newItem setNumberValue:[NSNumber numberWithInt:1]];
-  }
-  [newItem setParent:item];
-
-  [self addItem:newItem toContainer:item atIndex:[[item children] count]];      
 }
 
 
@@ -381,6 +389,7 @@
 
 - (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
+  // Todo: only update the item if it has actualy changed 
   NSString *stringValue = (NSString *)object;
   
   if ([item isKindOfClass:[NBTContainer class]]) {
@@ -439,26 +448,11 @@
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:NO];
     
-    [[[outlineView menu] itemAtIndex:4] setEnabled:YES];
+    [[[outlineView menu] itemAtIndex:2] setEnabled:YES];
   }
   else {
     for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
       [menuItem setEnabled:YES];
-    
-    
-    BOOL addChildMenuEnabled = NO;
-    NBTContainer *cont = [dataView itemAtRow:row];
-    
-    if (cont == nil) {
-      if ([fileData type] == NBTTypeCompound || [fileData type] == NBTTypeList)
-        addChildMenuEnabled = YES;
-    }
-    if ([cont isKindOfClass:[NBTContainer class]]) {
-      if (cont.type == NBTTypeCompound || cont.type == NBTTypeList)
-        addChildMenuEnabled = YES;
-    }
-    
-    [[[outlineView menu] itemAtIndex:4] setEnabled:addChildMenuEnabled];
   }
 }
 
@@ -510,6 +504,36 @@
     return nil;
     
   return [tableColumn dataCell];
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent
+{
+  NSLog(@"Handle Key Down");
+  if (([theEvent modifierFlags] & NSCommandKeyMask) || ([theEvent modifierFlags] & NSAlternateKeyMask)
+      || ([theEvent modifierFlags] & NSControlKeyMask) || ([theEvent modifierFlags] & NSFunctionKeyMask)) {
+    // Handle any key events with modifier keys here
+    return NO;
+  }
+  
+  unichar key = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
+  if (key == NSDeleteCharacter) {
+    
+    NBTContainer *selectedItem = [outlineView itemAtRow:[outlineView selectedRow]];
+    if (selectedItem) {
+      [self removeRow:nil];
+      return YES;
+    }
+  }
+  if ((key == NSEnterCharacter) || (key == NSCarriageReturnCharacter)) {
+    if ([dataView editedRow] == -1) { // Not being edited, Insert new row
+      [self insertRow:nil];
+      return YES;
+    }
+    
+    // Being edited, save and move to next row
+  }
+  
+  return NO;
 }
 
 
