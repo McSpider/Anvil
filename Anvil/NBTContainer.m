@@ -615,8 +615,9 @@
 
 - (void)appendString:(NSString *)str toData:(NSMutableData *)data
 {
-  [self appendShort:str.length toData:data];
-  [data appendData:[str dataUsingEncoding:NSUTF8StringEncoding]];
+  NSData *strData = [str dataUsingEncoding:NSUTF8StringEncoding];
+  [self appendShort:strData.length toData:data];
+  [data appendData:strData];
 }
 - (void)appendByte:(uint8_t)v toData:(NSMutableData *)data
 {
