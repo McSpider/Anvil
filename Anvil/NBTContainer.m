@@ -12,7 +12,7 @@
 
 
 #ifndef NBT_LOGGING
-#define NBT_LOGGING 1
+#define NBT_LOGGING 0
 #endif
 
 #if NBT_LOGGING
@@ -74,18 +74,44 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	NBTContainer *instanceCopy = [[NBTContainer allocWithZone:zone] init];
+  NBTContainer *instanceCopy = [[NBTContainer allocWithZone:zone] init];
   
-	instanceCopy.name = [[self.name copy] autorelease];
-	instanceCopy.children = [[[NSMutableArray alloc] initWithArray:self.children copyItems:YES] autorelease];
+  instanceCopy.name = [[self.name copy] autorelease];
+  instanceCopy.children = [[[NSMutableArray alloc] initWithArray:self.children copyItems:YES] autorelease];
   instanceCopy.type = self.type;
-	instanceCopy.stringValue = [[self.stringValue copy] autorelease];
+  instanceCopy.stringValue = [[self.stringValue copy] autorelease];
   instanceCopy.numberValue = [[self.numberValue copy] autorelease];
-	instanceCopy.arrayValue = [[[NSMutableArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
+  instanceCopy.arrayValue = [[[NSMutableArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
   instanceCopy.listType = self.listType;
   instanceCopy.parent = self.parent;
   
-	return instanceCopy;
+  return instanceCopy;
+}
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+  [super init];
+  name = [[decoder decodeObjectForKey:@"name"] retain];
+  children = [[decoder decodeObjectForKey:@"children"] retain];
+  type = [decoder decodeIntForKey:@"type"];
+  stringValue = [[decoder decodeObjectForKey:@"stringValue"] retain];
+  numberValue = [[decoder decodeObjectForKey:@"numberValue"] retain];
+  arrayValue = [[decoder decodeObjectForKey:@"arrayValue"] retain];
+  listType = [decoder decodeIntForKey:@"listType"];
+  parent = [[decoder decodeObjectForKey:@"parent"] retain];
+  return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder
+{
+  [encoder encodeObject:name forKey:@"name"];
+  [encoder encodeObject:children forKey:@"children"];
+  [encoder encodeInt:type forKey:@"type"];
+  [encoder encodeObject:stringValue forKey:@"stringValue"];
+  [encoder encodeObject:numberValue forKey:@"numberValue"];
+  [encoder encodeObject:arrayValue forKey:@"arrayValue"];
+  [encoder encodeInt:listType forKey:@"listType"];
+  [encoder encodeObject:parent forKey:@"parent"];
 }
 
 - (NSString *)description
@@ -163,7 +189,7 @@
 {
   if (!data)
     return;
-
+  
   NSData *uData = [data gzipInflate];
   if (uData) {
     data = uData;
@@ -255,7 +281,7 @@
       }
       
       else if (self.listType == NBTTypeString)
-      {        
+      {
         NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
         listItem.stringValue = [self stringFromBytes:bytes offset:&offset];
         listItem.parent = self;
@@ -339,7 +365,7 @@
     }
     
     NBTLog(@"<< end list %@", self.name);
-  }	
+  }
   else if (self.type == NBTTypeString)
   {
     self.stringValue = [self stringFromBytes:bytes offset:&offset];
@@ -460,7 +486,7 @@
       }
       
       else if (self.listType == NBTTypeString)
-      {        
+      {
         NBTLog(@"   list item, string=%@", item.stringValue);
         [self appendString:item.stringValue toData:data];
       }

@@ -9,9 +9,11 @@
 #import "NBTDocument.h"
 
 #define NBTDragAndDropData @"NBTDragAndDropData"
+#define NBTCopyAndPasteData @"NBTCopyAndPasteData"
 
 
 @interface NBTDocument ()
+- (void)removeItem:(NBTContainer *)item fromContainer:(NBTContainer *)container;
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container;
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index;
 
@@ -101,13 +103,13 @@
   If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
   */
   
-  if ([typeName isEqualToString:@"NBT.dat"]) {
+  if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
     self.fileLoaded = NO;
     [self performSelectorInBackground:@selector(loadDatData:) withObject:data];
   }
   
   if (outError) {
-      *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
+    *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
   }
   return YES;
 }
@@ -154,9 +156,9 @@
   if (!item) {
     item = [dataView itemAtRow:[dataView selectedRow]];
   }
-
-  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
-  [self removeItemAtIndex:rowIndex fromContainer:[item parent]];    
+  
+  NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
+  [self removeItemAtIndex:itemIndex fromContainer:[item parent]];  
 }
 
 - (IBAction)insertRow:(id)sender
@@ -191,7 +193,7 @@
     
   }
   else {
-    NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
+    NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
     NBTType type = NBTTypeByte;
     NSString *name = @"New Row";
     if (item.parent && item.parent.type == NBTTypeList) {
@@ -204,23 +206,47 @@
     [newItem setNumberValue:[NSNumber numberWithInt:1]];
     [newItem setParent:[item parent]];
     
-    [self addItem:newItem toContainer:[item parent] atIndex:rowIndex+1];
+    [self addItem:newItem toContainer:[item parent] atIndex:itemIndex+1];
   }
+  
+  // Select the newly added row
+  NSInteger rowIndex = [dataView rowForItem:item]; // Todo: rowIndex is -1 if the root container is selected
+  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex+1] byExtendingSelection:NO];
 }
 
 - (IBAction)duplicateRow:(id)sender
 {
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  NSInteger rowIndex = [[[item parent] children] indexOfObject:item];
-  [self addItem:[[item copy] autorelease] toContainer:[item parent] atIndex:rowIndex+1];      
+  if (!item) {
+    item = [dataView itemAtRow:[dataView selectedRow]];
+  }
+
+  NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
+  [self addItem:[[item copy] autorelease] toContainer:[item parent] atIndex:itemIndex+1];
+  
+  // Select the duplicated row
+  NSInteger rowIndex = [dataView rowForItem:item];
+  if ([dataView isItemExpanded:item] && (item.type == NBTTypeCompound || item.type == NBTTypeList))
+    rowIndex = rowIndex + item.children.count;
+  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex+1] byExtendingSelection:NO];
 }
 
 
 #pragma mark -
 #pragma mark Undo-able data methods
 
+- (void)removeItem:(NBTContainer *)item fromContainer:(NBTContainer *)container
+{
+  [self removeItemAtIndex:[container.children indexOfObject:item] fromContainer:container];
+}
+
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container
 {
+  if ((index > container.children.count) || index < 0) {
+    NSLog(@"Remove item, index invalid. %li",index);
+    return;
+  }
+  
   [[[self undoManager] prepareWithInvocationTarget:self] addItem:[container.children objectAtIndex:index] toContainer:container atIndex:index];
   
   [container.children removeObjectAtIndex:index];
@@ -229,6 +255,14 @@
 
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index
 {
+  if (index == -1) {
+    index = container.children.count;
+  }
+  if ((index > container.children.count) || index < 0) {
+    NSLog(@"Add item, index invalid. %li",index);
+    return;
+  }
+  
   [[[self undoManager] prepareWithInvocationTarget:self] removeItemAtIndex:index fromContainer:container];
   
   [container.children insertObject:item atIndex:index];
@@ -389,9 +423,7 @@
 
 - (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-  // Todo: only update the item if it has actualy changed 
-  NSString *stringValue = (NSString *)object;
-  
+  // Todo: only update the item if it has actualy changed  
   if ([item isKindOfClass:[NBTContainer class]]) {
     if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
@@ -401,11 +433,11 @@
       
       NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
       [formatter setNumberStyle:NSNumberFormatterNoStyle];
-      NSNumber *myNumber = [formatter numberFromString:stringValue];
+      NSNumber *myNumber = [formatter numberFromString:(NSString *)object];
       [formatter release];
       
       if ([(NBTContainer *)item type] == NBTTypeString) {
-        [self setItem:item stringValue:stringValue];
+        [self setItem:item stringValue:(NSString *)object];
       }
       else if ([(NBTContainer *)item type] == NBTTypeLong || [(NBTContainer *)item type] == NBTTypeShort ||
                [(NBTContainer *)item type] == NBTTypeInt || [(NBTContainer *)item type] == NBTTypeInt ||
@@ -418,7 +450,7 @@
       [self setItem:item type:[(NSNumber *)object intValue] - 1];      
     }
     else if ([tableColumn.identifier isEqualToString:@"Key"]) {;
-      [self setItem:item name:stringValue];
+      [self setItem:item name:(NSString *)object];
     }
   }
 }
@@ -508,16 +540,22 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent
 {
-  NSLog(@"Handle Key Down");
+  unichar key = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
+  
   if (([theEvent modifierFlags] & NSCommandKeyMask) || ([theEvent modifierFlags] & NSAlternateKeyMask)
       || ([theEvent modifierFlags] & NSControlKeyMask) || ([theEvent modifierFlags] & NSFunctionKeyMask)) {
     // Handle any key events with modifier keys here
+    
+    if (([theEvent modifierFlags] & NSCommandKeyMask) && (key == 'd')) {
+      if ([outlineView selectedRow] != -1) {
+        [self duplicateRow:nil];
+        return YES;
+      }
+    }
     return NO;
   }
   
-  unichar key = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
   if (key == NSDeleteCharacter) {
-    
     NBTContainer *selectedItem = [outlineView itemAtRow:[outlineView selectedRow]];
     if (selectedItem) {
       [self removeRow:nil];
@@ -540,9 +578,10 @@
 #pragma mark -
 #pragma mark OutlineView drag & drop
 
-/*- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
+- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
-  if ([(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
+  // if item == null item = outline view base item
+  if (item && [(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
     return NSDragOperationNone;
   
   if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
@@ -553,16 +592,20 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
-  
   draggedItems = [items retain];
-  //NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
-  [pasteboard setData:nil forType:NBTDragAndDropData];
+  [pasteboard setData:data forType:NBTDragAndDropData];
   return YES;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
 {
+  NSPasteboard *pboard = [info draggingPasteboard];
+  NSData *rowData = [pboard dataForType:NBTDragAndDropData];
+  NSArray *items = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+  NSLog(@"Data: %@",items);
+  
   if (!draggedItems)
     return NO;
   
@@ -570,22 +613,17 @@
   if (!dropItem)
     return NO;
   
+  if (!item)
+    item = fileData;
+  
   if ([item isKindOfClass:[NBTContainer class]]) {
     // TODO - Properly handle copy/move
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask) {
-      NBTContainer *newItem = [dropItem copy];
-      [newItem setParent:item];
-      [[(NBTContainer *)item children] insertObject:newItem atIndex:index];
-      [dataView reloadItem:item reloadChildren:YES];
-    }
-    else {
-      [dropItem.parent.children removeObject:dropItem];
-      [dropItem setParent:item];
-      [[(NBTContainer *)item children] insertObject:dropItem atIndex:index];
-      
-      [dataView reloadItem:dropItem.parent reloadChildren:YES];
-      [dataView reloadItem:item reloadChildren:YES];
-    }
+    NBTContainer *newItem = [dropItem copy];
+    [newItem setParent:item];
+    [self addItem:newItem toContainer:item atIndex:index];
+    
+    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != NSAlternateKeyMask)
+      [self removeItem:dropItem fromContainer:item]; // Remove after insert to prevent shifting of rows
   }
   
   return YES;
@@ -594,6 +632,62 @@
 - (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
 {
   [draggedItems release];
-}*/
+}
+
+
+#pragma mark -
+#pragma mark OutlineView copy & paste
+
+- (IBAction)copy:(id)sender
+{
+  NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
+  
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  [pasteboard declareTypes:[NSArray arrayWithObject:NBTCopyAndPasteData] owner:self];
+  [pasteboard setData:data forType:NBTCopyAndPasteData];
+}
+
+- (IBAction)cut:(id)sender
+{  
+  NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
+  
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  [pasteboard declareTypes:[NSArray arrayWithObject:NBTCopyAndPasteData] owner:self];
+  [pasteboard setData:data forType:NBTCopyAndPasteData];
+  
+  [self removeItem:selectedItem fromContainer:selectedItem.parent];
+}
+
+- (IBAction)paste:(id)sender
+{  
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSData *data = [pasteboard dataForType:NBTCopyAndPasteData];
+  if (!data) return;
+  
+  NBTContainer *item = [NSKeyedUnarchiver unarchiveObjectWithData:data];  
+  if (!item) return;
+  
+  NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
+  [self addItem:item toContainer:selectedItem.parent atIndex:[dataView selectedRow]];
+}
+
+
+- (BOOL)validateUserInterfaceItem:(id )anItem
+{
+  if ([anItem action] == @selector(copy:)) {
+    return ([dataView selectedRow] != -1);
+  }
+  if ([anItem action] == @selector(cut:)) {
+    return ([dataView selectedRow] != -1);
+  }
+  if ([anItem action] == @selector(paste:)) {
+    return ([dataView selectedRow] != -1);
+  }
+
+  return YES;
+}
+
 
 @end
