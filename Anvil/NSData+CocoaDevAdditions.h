@@ -13,4 +13,7 @@
 - (NSData *)gzipInflate;
 - (NSData *)gzipDeflate;
 
+- (NSData *)zlibInflate;
+- (NSData *)zlibDeflate;
+
 @end
