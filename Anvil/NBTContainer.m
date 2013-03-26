@@ -49,7 +49,8 @@
 
 - (id)init
 {
-  if (![super init])
+  self = [super init];
+  if (!self)
     return nil;
   
   compressed = YES;
@@ -58,6 +59,7 @@
   self.stringValue = nil;
   self.numberValue = nil;
   self.arrayValue = nil;
+  self.parent = nil;
   
   return self;
 }
@@ -83,14 +85,21 @@
   instanceCopy.numberValue = [[self.numberValue copy] autorelease];
   instanceCopy.arrayValue = [[[NSMutableArray alloc] initWithArray:self.arrayValue copyItems:YES] autorelease];
   instanceCopy.listType = self.listType;
-  instanceCopy.parent = self.parent;
+  
+  // Re-link children to parents
+  for (NBTContainer *child in instanceCopy.children) {
+    [child setParent:instanceCopy];
+  }
   
   return instanceCopy;
 }
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-  [super init];
+  self = [super init];
+  if  (!self)
+    return nil;
+  
   name = [[decoder decodeObjectForKey:@"name"] retain];
   children = [[decoder decodeObjectForKey:@"children"] retain];
   type = [decoder decodeIntForKey:@"type"];
@@ -98,7 +107,11 @@
   numberValue = [[decoder decodeObjectForKey:@"numberValue"] retain];
   arrayValue = [[decoder decodeObjectForKey:@"arrayValue"] retain];
   listType = [decoder decodeIntForKey:@"listType"];
-  parent = [[decoder decodeObjectForKey:@"parent"] retain];
+  
+  // Re-link children to parents
+  for (NBTContainer *child in children) {
+    [child setParent:self];
+  }
   return self;
 }
 
@@ -111,7 +124,6 @@
   [encoder encodeObject:numberValue forKey:@"numberValue"];
   [encoder encodeObject:arrayValue forKey:@"arrayValue"];
   [encoder encodeInt:listType forKey:@"listType"];
-  [encoder encodeObject:parent forKey:@"parent"];
 }
 
 - (NSString *)description
@@ -143,6 +155,9 @@
     return @"List";
   if (self.type == NBTTypeCompound)
     return @"Compound";
+  if (self.type == NBTTypeIntArray)
+    return @"Int Array";
+  
   
   return @"";
 }
@@ -153,6 +168,36 @@
   NBTContainer *cont = [[[NBTContainer alloc] init] autorelease];
   cont.name = theName;
   cont.type = theType;
+  return cont;
+}
+
++ (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType value:(id)theValue
+{
+  NBTContainer *cont = [[[NBTContainer alloc] init] autorelease];
+  cont.name = theName;
+  cont.type = theType;
+  
+  if (cont.type == NBTTypeByte || cont.type == NBTTypeShort || cont.type == NBTTypeInt || cont.type == NBTTypeLong
+      || cont.type == NBTTypeFloat || cont.type == NBTTypeDouble) {
+    if ([theValue isKindOfClass:[NSNumber class]]) {
+      cont.numberValue = (NSNumber *)theValue;
+    } else {
+      return nil;
+    }
+  }
+  else if (cont.type == NBTTypeString) {
+    if ([theValue isKindOfClass:[NSString class]]) {
+      cont.stringValue = (NSString *)theValue;
+    } else {
+      return nil;
+    }
+  }
+  
+  else if (!cont.type || cont.type == NBTTypeList || cont.type == NBTTypeCompound || cont.type == NBTTypeEnd
+           || cont.type == NBTTypeByteArray || cont.type == NBTTypeIntArray) {
+    return nil;
+  }
+  
   return cont;
 }
 

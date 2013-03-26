@@ -47,6 +47,7 @@ typedef enum {
 @property (nonatomic, assign) NBTContainer *parent;
 
 + (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType;
++ (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType value:(id)theValue;
 + (NBTContainer *)compoundWithName:(NSString *)theName;
 + (NBTContainer *)listWithName:(NSString *)theName type:(NBTType)theType;
 
