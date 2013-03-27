@@ -13,8 +13,10 @@
 		AE0F272315ADF9BF006E6FB6 /* Folder.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272215ADF9BF006E6FB6 /* Folder.png */; };
 		AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272415ADFB8D006E6FB6 /* Array.png */; };
 		AE0F272715ADFBCA006E6FB6 /* List.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272615ADFBCA006E6FB6 /* List.png */; };
-		AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */; };
+		AE334680170223BD006A4D0C /* NBTFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = AE33467F170223BD006A4D0C /* NBTFormatter.m */; };
+		AE3D23AF15A3741A004AAD72 /* KBOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBOutlineView.m */; };
 		AE8854FB15D0CF18004A9D63 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AE8854FA15D0CF18004A9D63 /* README.md */; };
+		AEB4BF1E16B30C4100338355 /* NBTFile.m in Sources */ = {isa = PBXBuildFile; fileRef = AEB4BF1D16B30C4100338355 /* NBTFile.m */; };
 		AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */ = {isa = PBXBuildFile; fileRef = AEEBE37F15A6AEFF009755CD /* NBT.txt */; };
 		AEF5388015A13EE200E95CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF5387F15A13EE200E95CF3 /* Cocoa.framework */; };
 		AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEF5388815A13EE200E95CF3 /* InfoPlist.strings */; };
@@ -26,6 +28,7 @@
 		AEF538A115A13FFB00E95CF3 /* NBTContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF538A015A13FFB00E95CF3 /* NBTContainer.m */; };
 		AEF538A815A140C500E95CF3 /* NSData+CocoaDevAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */; };
 		AEF538AE15A140F000E95CF3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEF538AD15A140F000E95CF3 /* libz.dylib */; };
+		AEFB0C581700C06B0026E2F5 /* Meta.png in Resources */ = {isa = PBXBuildFile; fileRef = AEFB0C571700C06B0026E2F5 /* Meta.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,9 +40,13 @@
 		AE0F272215ADF9BF006E6FB6 /* Folder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Folder.png; sourceTree = "<group>"; };
 		AE0F272415ADFB8D006E6FB6 /* Array.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Array.png; sourceTree = "<group>"; };
 		AE0F272615ADFBCA006E6FB6 /* List.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = List.png; sourceTree = "<group>"; };
-		AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBMenuOutlineView.h; sourceTree = "<group>"; };
-		AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBMenuOutlineView.m; sourceTree = "<group>"; };
+		AE33467E170223BD006A4D0C /* NBTFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NBTFormatter.h; sourceTree = "<group>"; };
+		AE33467F170223BD006A4D0C /* NBTFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NBTFormatter.m; sourceTree = "<group>"; };
+		AE3D23AD15A3741A004AAD72 /* KBOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBOutlineView.h; sourceTree = "<group>"; };
+		AE3D23AE15A3741A004AAD72 /* KBOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBOutlineView.m; sourceTree = "<group>"; };
 		AE8854FA15D0CF18004A9D63 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		AEB4BF1C16B30C4100338355 /* NBTFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NBTFile.h; sourceTree = "<group>"; };
+		AEB4BF1D16B30C4100338355 /* NBTFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NBTFile.m; sourceTree = "<group>"; };
 		AEEBE37F15A6AEFF009755CD /* NBT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NBT.txt; sourceTree = "<group>"; };
 		AEF5387B15A13EE200E95CF3 /* Anvil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anvil.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEF5387F15A13EE200E95CF3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -60,6 +67,7 @@
 		AEF538A615A140C500E95CF3 /* NSData+CocoaDevAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+CocoaDevAdditions.h"; sourceTree = "<group>"; };
 		AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+CocoaDevAdditions.m"; sourceTree = "<group>"; };
 		AEF538AD15A140F000E95CF3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		AEFB0C571700C06B0026E2F5 /* Meta.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Meta.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,8 +90,8 @@
 				AE0A015A15B7678500C2B57D /* KBLabel.m */,
 				AE08DE1615ACA3FA00C33EF5 /* UIController.h */,
 				AE08DE1715ACA3FA00C33EF5 /* UIController.m */,
-				AE3D23AD15A3741A004AAD72 /* KBMenuOutlineView.h */,
-				AE3D23AE15A3741A004AAD72 /* KBMenuOutlineView.m */,
+				AE3D23AD15A3741A004AAD72 /* KBOutlineView.h */,
+				AE3D23AE15A3741A004AAD72 /* KBOutlineView.m */,
 			);
 			name = KBClasses;
 			sourceTree = "<group>";
@@ -131,8 +139,12 @@
 			children = (
 				AEF5389115A13EE200E95CF3 /* NBTDocument.h */,
 				AEF5389215A13EE200E95CF3 /* NBTDocument.m */,
+				AEB4BF1C16B30C4100338355 /* NBTFile.h */,
+				AEB4BF1D16B30C4100338355 /* NBTFile.m */,
 				AEF5389F15A13FFB00E95CF3 /* NBTContainer.h */,
 				AEF538A015A13FFB00E95CF3 /* NBTContainer.m */,
+				AE33467E170223BD006A4D0C /* NBTFormatter.h */,
+				AE33467F170223BD006A4D0C /* NBTFormatter.m */,
 				AE08DE1A15ACA3FE00C33EF5 /* KBClasses */,
 				AEF538A615A140C500E95CF3 /* NSData+CocoaDevAdditions.h */,
 				AEF538A715A140C500E95CF3 /* NSData+CocoaDevAdditions.m */,
@@ -151,6 +163,7 @@
 				AE0F272215ADF9BF006E6FB6 /* Folder.png */,
 				AE0F272415ADFB8D006E6FB6 /* Array.png */,
 				AE0F272615ADFBCA006E6FB6 /* List.png */,
+				AEFB0C571700C06B0026E2F5 /* Meta.png */,
 				AEF5388815A13EE200E95CF3 /* InfoPlist.strings */,
 				AEF5388B15A13EE200E95CF3 /* main.m */,
 				AEF5388D15A13EE200E95CF3 /* Anvil-Prefix.pch */,
@@ -220,6 +233,7 @@
 				AE0F272515ADFB8D006E6FB6 /* Array.png in Resources */,
 				AE0F272715ADFBCA006E6FB6 /* List.png in Resources */,
 				AE8854FB15D0CF18004A9D63 /* README.md in Resources */,
+				AEFB0C581700C06B0026E2F5 /* Meta.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,9 +248,11 @@
 				AEF5389315A13EE200E95CF3 /* NBTDocument.m in Sources */,
 				AEF538A115A13FFB00E95CF3 /* NBTContainer.m in Sources */,
 				AEF538A815A140C500E95CF3 /* NSData+CocoaDevAdditions.m in Sources */,
-				AE3D23AF15A3741A004AAD72 /* KBMenuOutlineView.m in Sources */,
+				AE3D23AF15A3741A004AAD72 /* KBOutlineView.m in Sources */,
 				AE0A015B15B7678500C2B57D /* KBLabel.m in Sources */,
 				AE08DE1815ACA3FA00C33EF5 /* UIController.m in Sources */,
+				AEB4BF1E16B30C4100338355 /* NBTFile.m in Sources */,
+				AE334680170223BD006A4D0C /* NBTFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

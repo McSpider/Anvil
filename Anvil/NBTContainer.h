@@ -1,5 +1,5 @@
 //
-//  NBTFile.h
+//  NBTContainer.h
 //  InsideJob
 //
 //  Created by Adam Preble on 10/6/10.
@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-typedef enum {
+enum  {
   NBTTypeEnd = 0,
   NBTTypeByte = 1,
   NBTTypeShort = 2,
@@ -20,8 +20,8 @@ typedef enum {
   NBTTypeString = 8,
   NBTTypeList = 9,
   NBTTypeCompound = 10,
-  NBTTypeIntArray = 11,
-} NBTType;
+  NBTTypeIntArray = 11
+}; typedef uint8_t NBTType;
 
 
 @interface NBTContainer : NSObject {

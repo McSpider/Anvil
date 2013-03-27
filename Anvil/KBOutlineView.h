@@ -1,5 +1,5 @@
 //
-//  KBMenuOutlineView.h
+//  KBOutlineView.h
 //  Anvil
 //
 //  Created by Ben K on 12/07/03.
@@ -8,11 +8,11 @@
 
 #import <AppKit/AppKit.h>
 
-@interface NSOutlineView (VariableCellColumnDelegate)
-- (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row;
+@interface NSOutlineView (CustomDelegateMessages)
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowMenuForRow:(NSInteger)row;
 - (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent;
 @end
 
-@interface KBMenuOutlineView : NSOutlineView
+@interface KBOutlineView : NSOutlineView
 
 @end

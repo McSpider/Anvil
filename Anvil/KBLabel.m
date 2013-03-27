@@ -13,11 +13,12 @@
 
 - (id)initWithCoder:(NSCoder *)decoder;
 {
-  if (![super initWithCoder:decoder])
-		return nil;
+  self = [super initWithCoder:decoder];
+  if (!self)
+    return nil;
   
   [[self cell] setBackgroundStyle:NSBackgroundStyleRaised];
-	return self;
+  return self;
 }
 
 

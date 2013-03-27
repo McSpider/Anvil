@@ -1,5 +1,5 @@
 //
-//  NBTFile.m
+//  NBTContainer.m
 //  InsideJob
 //
 //  Created by Adam Preble on 10/6/10.

@@ -8,15 +8,14 @@
 
 #import <Cocoa/Cocoa.h>
 #import "NBTContainer.h"
+#import "NBTFormatter.h"
 
-@interface NBTDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource> {
+@interface NBTDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource,NSMenuDelegate> {
   NBTContainer *fileData;
   IBOutlet NSMenu *typeMenu;
   
   IBOutlet NSOutlineView *dataView;
-  BOOL fileLoaded;
-  
-  NSArray *draggedItems;
+  BOOL fileLoaded;  
 }
 
 @property (nonatomic, retain) NBTContainer *fileData;

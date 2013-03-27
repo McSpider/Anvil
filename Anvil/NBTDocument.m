@@ -13,6 +13,7 @@
 
 
 @interface NBTDocument ()
+- (void)removeItemAtRow:(NSInteger)row;
 - (void)removeItem:(NBTContainer *)item fromContainer:(NBTContainer *)container;
 - (void)removeItemAtIndex:(NSInteger)index fromContainer:(NBTContainer *)container;
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index;
@@ -35,7 +36,8 @@
 
 - (id)init
 {
-  if (![super init])
+  self = [super init];
+  if (!self)
     return nil;
   
   fileData = [[NBTContainer compoundWithName:nil] retain];
@@ -152,13 +154,13 @@
 
 - (IBAction)removeRow:(id)sender
 {
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  if (!item) {
-    item = [dataView itemAtRow:[dataView selectedRow]];
+  NSInteger row = [dataView clickedRow];
+  if (row == -1) {
+    row = [dataView selectedRow];
   }
-  
-  NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
-  [self removeItemAtIndex:itemIndex fromContainer:[item parent]];  
+  if (row != -1) {
+    [self removeItemAtRow:row];
+  }
 }
 
 - (IBAction)insertRow:(id)sender
@@ -189,8 +191,11 @@
     }
     [newItem setParent:item];
     
-    [self addItem:newItem toContainer:item atIndex:[[item children] count]];
+    [self addItem:newItem toContainer:item atIndex:0];
     
+    // Select the newly added child
+    NSInteger rowIndex = [dataView rowForItem:newItem];
+    [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
   }
   else {
     NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
@@ -207,11 +212,11 @@
     [newItem setParent:[item parent]];
     
     [self addItem:newItem toContainer:[item parent] atIndex:itemIndex+1];
-  }
-  
-  // Select the newly added row
-  NSInteger rowIndex = [dataView rowForItem:item]; // Todo: rowIndex is -1 if the root container is selected
-  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex+1] byExtendingSelection:NO];
+    
+    // Select the newly added row
+    NSInteger rowIndex = [dataView rowForItem:newItem];
+    [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+  }  
 }
 
 - (IBAction)duplicateRow:(id)sender
@@ -234,6 +239,14 @@
 
 #pragma mark -
 #pragma mark Undo-able data methods
+
+- (void)removeItemAtRow:(NSInteger)row
+{
+  NBTContainer *container = [(NBTContainer *)[dataView itemAtRow:row] parent];
+  NSInteger childIndex = [container.children indexOfObject:[dataView itemAtRow:row]];
+  
+  [self removeItemAtIndex:childIndex fromContainer:container];
+}
 
 - (void)removeItem:(NBTContainer *)item fromContainer:(NBTContainer *)container
 {
@@ -266,6 +279,8 @@
   [[[self undoManager] prepareWithInvocationTarget:self] removeItemAtIndex:index fromContainer:container];
   
   [container.children insertObject:item atIndex:index];
+  [item setParent:container];
+  
   [dataView reloadData];
   [dataView expandItem:container];
 }
@@ -277,7 +292,6 @@
   if (item.type == NBTTypeList) {
     item.listType = type;
     for (NBTContainer *child in item.children) {
-      //child.type = item.listType;
       [self setItem:child type:item.listType];
     }
     [dataView reloadItem:item reloadChildren:YES];
@@ -285,7 +299,6 @@
   else if (item.parent && item.parent.type == NBTTypeList) {
     item.parent.listType = type;
     for (NBTContainer *child in item.parent.children) {
-      //child.type = item.parent.listType;
       [self setItem:child type:item.parent.listType];
     }
     [dataView reloadItem:item.parent reloadChildren:YES];
@@ -296,20 +309,7 @@
 {
   [[[self undoManager] prepareWithInvocationTarget:self] setItem:item type:item.type];
   
-  [(NBTContainer *)item setType:type];
-  if (type == NBTTypeList) {
-    [(NBTContainer *)[[self undoManager] prepareWithInvocationTarget:item] setListType:item.listType];
-    [(NBTContainer *)item setListType:NBTTypeByte];
-    for (NBTContainer *child in item.children) {
-      //child.type = item.listType;
-      //[self setItem:child type:item.listType];
-      
-      // CHECK
-      [(NBTContainer *)[[self undoManager] prepareWithInvocationTarget:child] setType:child.type];
-      [(NBTContainer *)child setType:item.listType];
-
-    }
-  }
+  [item setType:type];
   [dataView reloadItem:item reloadChildren:YES];
 }
 
@@ -388,61 +388,60 @@
       return [NSImage imageNamed:@"Folder"];
   }
   
-  if ([item isKindOfClass:[NBTContainer class]]) {
-    if ([tableColumn.identifier isEqualToString:@"Key"]) {
-      if ([[(NBTContainer *)item parent] type] == NBTTypeList)
-        return @"List Item";
-      return [(NBTContainer *)item name];
-    }
-    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-      return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
-    }
-    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
-      if ([(NBTContainer *)item type] == NBTTypeString)
-        return [(NBTContainer *)item stringValue];
-      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
-        return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
-      else if ([(NBTContainer *)item type] == NBTTypeList)
-        return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
-      else if ([(NBTContainer *)item type] == NBTTypeCompound)
-        return nil;
-      else
-        return [(NBTContainer *)item numberValue];
-    }
-    else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
-      if ([(NBTContainer *)item type] == NBTTypeCompound)
-        return [NSImage imageNamed:@"Folder"];
-      else if ([(NBTContainer *)item type] == NBTTypeList)
-        return [NSImage imageNamed:@"List"];
-      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
-        return [NSImage imageNamed:@"Array"];
-    }
+  if ([tableColumn.identifier isEqualToString:@"Key"]) {
+    if ([[(NBTContainer *)item parent] type] == NBTTypeList)
+      return @"List Item";
+    return [(NBTContainer *)item name];
+  }
+  else if ([tableColumn.identifier isEqualToString:@"Type"]) {
+    return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
+  }
+  else if ([tableColumn.identifier isEqualToString:@"Value"]) {
+    if ([(NBTContainer *)item type] == NBTTypeString)
+      return [(NBTContainer *)item stringValue];
+    else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+      return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
+    else if ([(NBTContainer *)item type] == NBTTypeList)
+      return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
+    else if ([(NBTContainer *)item type] == NBTTypeCompound)
+      return nil;
+    else
+      return [(NBTContainer *)item numberValue];
+  }
+  else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
+    if ([(NBTContainer *)item type] == NBTTypeCompound)
+      return [NSImage imageNamed:@"Folder"];
+    else if ([(NBTContainer *)item type] == NBTTypeList)
+      return [NSImage imageNamed:@"List"];
+    else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+      return [NSImage imageNamed:@"Array"];
   }
   return nil;
 }
 
 - (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-  // Todo: only update the item if it has actualy changed  
+  // TODO: Only update the item if its value has actually changed
   if ([item isKindOfClass:[NBTContainer class]]) {
     if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
         [self setItem:item listType:[(NSNumber *)object intValue] - 1];        
         return;
       }
-      
-      NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-      [formatter setNumberStyle:NSNumberFormatterNoStyle];
-      NSNumber *myNumber = [formatter numberFromString:(NSString *)object];
-      [formatter release];
-      
-      if ([(NBTContainer *)item type] == NBTTypeString) {
+      else if ([(NBTContainer *)item type] == NBTTypeString) {
         [self setItem:item stringValue:(NSString *)object];
       }
       else if ([(NBTContainer *)item type] == NBTTypeLong || [(NBTContainer *)item type] == NBTTypeShort ||
                [(NBTContainer *)item type] == NBTTypeInt || [(NBTContainer *)item type] == NBTTypeInt ||
                [(NBTContainer *)item type] == NBTTypeByte || [(NBTContainer *)item type] == NBTTypeDouble ||
                [(NBTContainer *)item type] == NBTTypeFloat) {
+        
+        
+        NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+        [formatter setNumberStyle:NSNumberFormatterNoStyle];
+        NSNumber *myNumber = [formatter numberFromString:(NSString *)object];
+        [formatter release];
+        
         [self setItem:item numberValue:myNumber];
       }
     }
@@ -474,68 +473,63 @@
   return YES;
 }
 
-- (void)outlineView:(NSOutlineView *)outlineView willShowMenuForRow:(NSInteger)row
-{
-  if (row == -1) {
-    for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
-      [menuItem setEnabled:NO];
-    
-    [[[outlineView menu] itemAtIndex:2] setEnabled:YES];
-  }
-  else {
-    for (NSMenuItem *menuItem in [[outlineView menu] itemArray])
-      [menuItem setEnabled:YES];
-  }
-}
-
 - (NSCell *)outlineView:(NSOutlineView *)outlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-  if (tableColumn) {
-    BOOL isContainer = [item isKindOfClass:[NBTContainer class]];
+  if (!tableColumn) {
+    return nil;
+  }
+  
+  if ([tableColumn.identifier isEqualToString:@"Key"]) {
+    // Add formatter to cell
+    [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:NBTTypeString]];
     
-    if ([tableColumn.identifier isEqualToString:@"Key"]) {
-      // Disable list item name fields
-      if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
-        NSCell *dataCell = [[tableColumn dataCell] copy];
-        [dataCell setEnabled:NO];
-        return [dataCell autorelease];
-      }
-    }
-    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
-      // Change list value field to a listType popup
-      if (isContainer && [(NBTContainer *)item type] == NBTTypeList) {
-        NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
-        [listTypeCell setBordered:NO];
-        NSMenu *aMenu = [typeMenu copy];
-        [[aMenu itemAtIndex:0] setTitle:@"List Type"];
-        [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
-        [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
-        [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
-        [listTypeCell setMenu:aMenu];
-        [aMenu release];
-        [listTypeCell selectItemWithTag:NBTTypeByte];
-        return [listTypeCell autorelease];
-      }
-      // Disable byte/int array value fields
-      else if (isContainer && ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)) {
-        NSCell *dataCell = [[tableColumn dataCell] copy];
-        [dataCell setEnabled:NO];
-        return [dataCell autorelease];
-      }
-    }
-    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-      // Disable the type popup for list items
-      if (isContainer && [[(NBTContainer *)item parent] type] == NBTTypeList) {
-        NSCell *dataCell = [[tableColumn dataCell] copy];
-        [dataCell setEnabled:NO];
-        return [dataCell autorelease];
-      }
+    // Disable list item name fields
+    if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
+      NSCell *dataCell = [[tableColumn dataCell] copy];
+      [dataCell setEnabled:NO];
+      return [dataCell autorelease];
     }
   }
-  else
-    return nil;
+  else if ([tableColumn.identifier isEqualToString:@"Value"]) {
+    // Add formatter to cell
+    [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:[(NBTContainer *)item type]]];
     
+    // Change list value field to a listType popup
+    if ([(NBTContainer *)item type] == NBTTypeList) {
+      NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
+      [listTypeCell setBordered:NO];
+      NSMenu *aMenu = [typeMenu copy];
+      [[aMenu itemAtIndex:0] setTitle:@"List Type"];
+      [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
+      [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
+      [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
+      [listTypeCell setMenu:aMenu];
+      [aMenu release];
+      [listTypeCell selectItemWithTag:NBTTypeByte];
+      return [listTypeCell autorelease];
+    }
+    // Disable byte/int array value fields
+    else if (([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)) {
+      NSCell *dataCell = [[tableColumn dataCell] copy];
+      [dataCell setEnabled:NO];
+      return [dataCell autorelease];
+    }
+  }
+  else if ([tableColumn.identifier isEqualToString:@"Type"]) {
+    // Disable the type popup for list items
+    if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
+      NSCell *dataCell = [[tableColumn dataCell] copy];
+      [dataCell setEnabled:NO];
+      return [dataCell autorelease];
+    }
+  }
+  
   return [tableColumn dataCell];
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
+{
+  return YES;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent
@@ -567,8 +561,9 @@
       [self insertRow:nil];
       return YES;
     }
-    
-    // Being edited, save and move to next row
+    else {
+      // Being edited, save and move to next row/column, Currently just ends editing
+    }
   }
   
   return NO;
@@ -580,9 +575,14 @@
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
-  // if item == null item = outline view base item
+  // TODO: Prevent dragging and dropping into itself.
+  // Only drag into compounds or lists.
   if (item && [(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
     return NSDragOperationNone;
+  
+  // Drag is coming from a different view
+  if ([info draggingSource] != dataView)
+    return NSDragOperationCopy;
   
   if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
     return NSDragOperationCopy;
@@ -592,8 +592,11 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
-  draggedItems = [items retain];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
+  NSMutableDictionary *itemsDictionary = [NSMutableDictionary dictionary];
+  for (NBTContainer *container in items)
+    [itemsDictionary setObject:container forKey:[NSNumber numberWithInteger:[dataView rowForItem:container]]];
+  
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:itemsDictionary];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
   [pasteboard setData:data forType:NBTDragAndDropData];
   return YES;
@@ -603,36 +606,34 @@
 {
   NSPasteboard *pboard = [info draggingPasteboard];
   NSData *rowData = [pboard dataForType:NBTDragAndDropData];
-  NSArray *items = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-  NSLog(@"Data: %@",items);
+  NSDictionary *items = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
   
-  if (!draggedItems)
+  if (!items)
     return NO;
   
-  NBTContainer *dropItem = [draggedItems objectAtIndex:0];
-  if (!dropItem)
-    return NO;
-  
-  if (!item)
-    item = fileData;
-  
-  if ([item isKindOfClass:[NBTContainer class]]) {
-    // TODO - Properly handle copy/move
-    NBTContainer *newItem = [dropItem copy];
-    [newItem setParent:item];
-    [self addItem:newItem toContainer:item atIndex:index];
+  for (NSNumber *key in items) {
+    NBTContainer *dropItem = [items objectForKey:key];
+    if (!dropItem)
+      return NO;
     
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != NSAlternateKeyMask)
-      [self removeItem:dropItem fromContainer:item]; // Remove after insert to prevent shifting of rows
+    if (!item)
+      item = fileData;
+    
+    if ([item isKindOfClass:[NBTContainer class]]) {
+      // TODO: Properly handle copy/move
+      [dropItem setParent:item];
+      [self addItem:dropItem toContainer:item atIndex:index];
+      
+      // Remove the item if the operation is not a copy and the source view is the same as the receiving one
+      // [info draggingSourceOperationMask] returns NSDragOperationAll for Move operations?
+      if ([info draggingSourceOperationMask] != NSDragOperationCopy && [info draggingSource] == dataView)
+        [self removeItemAtRow:[key integerValue]]; // Remove after insert to prevent shifting of rows
+    }
   }
   
   return YES;
 }
 
-- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
-{
-  [draggedItems release];
-}
 
 
 #pragma mark -
@@ -640,6 +641,7 @@
 
 - (IBAction)copy:(id)sender
 {
+  // TODO: Possibly rewrite to support multiple items.
   NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
   
@@ -649,7 +651,8 @@
 }
 
 - (IBAction)cut:(id)sender
-{  
+{
+  // TODO: Possibly rewrite to support multiple items.
   NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
   
@@ -661,7 +664,7 @@
 }
 
 - (IBAction)paste:(id)sender
-{  
+{
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   NSData *data = [pasteboard dataForType:NBTCopyAndPasteData];
   if (!data) return;
@@ -670,7 +673,19 @@
   if (!item) return;
   
   NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
-  [self addItem:item toContainer:selectedItem.parent atIndex:[dataView selectedRow]];
+  if ([self outlineView:dataView isItemExpandable:selectedItem] && [dataView isItemExpanded:selectedItem]) {
+    // Paste as the first item in the selected item
+    [self addItem:item toContainer:selectedItem atIndex:0];
+  }
+  else {
+    // Paste below the selected item
+    NSInteger insertIndex = [[selectedItem.parent children] indexOfObject:selectedItem];
+    [self addItem:item toContainer:selectedItem.parent atIndex:insertIndex+1];
+  }
+  
+  // Select the pasted item
+  NSInteger rowIndex = [dataView rowForItem:item];
+  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 }
 
 
@@ -688,6 +703,30 @@
 
   return YES;
 }
+
+
+
+#pragma mark -
+#pragma mark NSMenu delegate
+
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{  
+  NSMenu *dataViewRightClickMenu = [dataView menu];
+  if (menu != dataViewRightClickMenu)
+    return;
+  
+  if ([dataView clickedRow] == -1) {
+    for (NSMenuItem *menuItem in [menu itemArray])
+      [menuItem setEnabled:NO];
+    
+    [[menu itemAtIndex:2] setEnabled:YES];
+  }
+  else {
+    for (NSMenuItem *menuItem in [menu itemArray])
+      [menuItem setEnabled:YES];
+  }
+}
+
 
 
 @end
