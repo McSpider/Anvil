@@ -270,9 +270,10 @@
   [container.children removeObjectAtIndex:index];
   
   // TODO: Decide if we want to select something after we delete the selected row.
-  [dataView beginUpdates];
+  [dataView reloadData];
+  /*[dataView beginUpdates];
   [dataView removeItemsAtIndexes:[NSIndexSet indexSetWithIndex:index] inParent:(container == fileData?nil:container) withAnimation:NSTableViewAnimationEffectFade];
-  [dataView endUpdates];  
+  [dataView endUpdates];*/
 }
 
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index
@@ -290,10 +291,10 @@
   [container.children insertObject:item atIndex:index];
   [item setParent:container];
   
-  //[dataView reloadData];
-  [dataView beginUpdates];
+  [dataView reloadData];
+  /*[dataView beginUpdates];
   [dataView insertItemsAtIndexes:[NSIndexSet indexSetWithIndex:index] inParent:(container == fileData?nil:container) withAnimation:NSTableViewAnimationEffectFade];
-  [dataView endUpdates];
+  [dataView endUpdates];*/
   
   [dataView expandItem:container];  
 }
@@ -576,7 +577,7 @@
       return YES;
     }
     else {
-      // Being edited, save and move to next row/column, Currently just ends editing
+      // Being edited, save and move to next row/column, currently just ends editing
     }
   }
   
@@ -632,12 +633,12 @@
   // [info draggingSourceOperationMask] returns NSDragOperationAll for Move operations?
   BOOL localReorderOperation = ([info draggingSourceOperationMask] != NSDragOperationCopy && [info draggingSource] == dataView);
   
-  // If its a local reorder get all the items before we modify the outline view
+  // If its a local reorder get all the original items before we modify the outline view
   NSMutableArray *draggedItems = nil;
   if (localReorderOperation) {
     draggedItems = [NSMutableArray array];
     for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
-      draggedItems = [dataView itemAtRow:[rowIndex integerValue]];
+      [draggedItems addObject:[dataView itemAtRow:[rowIndex integerValue]]];
     }
   }
   
