@@ -61,6 +61,9 @@
   self.arrayValue = nil;
   self.parent = nil;
   
+  self.type = NBTTypeByte;
+  self.listType = NBTTypeByte;
+  
   return self;
 }
 

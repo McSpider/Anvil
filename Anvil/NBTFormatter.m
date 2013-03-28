@@ -60,6 +60,7 @@
       NSBeep();
       return NO;
     }
+    return YES;
   }
   
   // Format numbers
@@ -106,7 +107,6 @@
     }
     *newString = [NSString stringWithFormat:@"%li",[[self formattedNumberFromString:partialString] longValue]];
   }
-  
   else if (formatterType == NBTTypeFloat) {
     NSComparisonResult resultMax = [numberValue compare:[NSNumber numberWithInt:FLT_MAX]];
     NSComparisonResult resultMin = [numberValue compare:[NSNumber numberWithInt:FLT_MIN]];
@@ -141,8 +141,10 @@
 
 - (BOOL)stringContainsLetters:(NSString *)string
 {
-  NSCharacterSet *nonNumbers;
-  nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+  NSMutableCharacterSet *chars = [NSCharacterSet decimalDigitCharacterSet];
+  [chars addCharactersInString:@".,"];
+  
+  NSCharacterSet *nonNumbers = [chars invertedSet];
   if ([string rangeOfCharacterFromSet:nonNumbers options:NSLiteralSearch].location != NSNotFound) {
     return YES;
   }

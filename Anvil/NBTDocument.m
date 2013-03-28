@@ -262,14 +262,23 @@
   
   [[[self undoManager] prepareWithInvocationTarget:self] addItem:[container.children objectAtIndex:index] toContainer:container atIndex:index];
   
+  // This is what happens when I get bored...
+  /*NSRect poff = [dataView rectOfRow:[dataView rowForItem:[container.children objectAtIndex:index]]];
+  NSPoint poffPos = [[dataView window] convertBaseToScreen:[dataView convertPoint:NSMakePoint(poff.origin.x+(poff.size.height/2), poff.origin.y+(poff.size.height/2)) toView:nil]];
+  NSShowAnimationEffect(NSAnimationEffectPoof, poffPos, NSZeroSize, NULL, NULL, NULL);*/
+
   [container.children removeObjectAtIndex:index];
-  [dataView reloadData];
+  
+  // TODO: Decide if we want to select something after we delete the selected row.
+  [dataView beginUpdates];
+  [dataView removeItemsAtIndexes:[NSIndexSet indexSetWithIndex:index] inParent:(container == fileData?nil:container) withAnimation:NSTableViewAnimationEffectFade];
+  [dataView endUpdates];  
 }
 
 - (void)addItem:(NBTContainer *)item toContainer:(NBTContainer *)container atIndex:(NSInteger)index
 {
   if (index == -1) {
-    index = container.children.count;
+    index = 0; // Insert as first item
   }
   if ((index > container.children.count) || index < 0) {
     NSLog(@"Add item, index invalid. %li",index);
@@ -281,12 +290,17 @@
   [container.children insertObject:item atIndex:index];
   [item setParent:container];
   
-  [dataView reloadData];
-  [dataView expandItem:container];
+  //[dataView reloadData];
+  [dataView beginUpdates];
+  [dataView insertItemsAtIndexes:[NSIndexSet indexSetWithIndex:index] inParent:(container == fileData?nil:container) withAnimation:NSTableViewAnimationEffectFade];
+  [dataView endUpdates];
+  
+  [dataView expandItem:container];  
 }
 
 - (void)setItem:(NBTContainer *)item listType:(NBTType)type
 {
+  // TODO: Changing the listType doesn't reformat the numberValue
   [[[self undoManager] prepareWithInvocationTarget:self] setItem:item listType:item.listType];
   
   if (item.type == NBTTypeList) {
@@ -302,7 +316,7 @@
       [self setItem:child type:item.parent.listType];
     }
     [dataView reloadItem:item.parent reloadChildren:YES];
-  }  
+  }
 }
 
 - (void)setItem:(NBTContainer *)item type:(NBTType)type
@@ -575,7 +589,7 @@
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
-  // TODO: Prevent dragging and dropping into itself.
+  // TODO: Prevent dragging and dropping into itself, also prevent dragging into a list unless the types are the same.
   // Only drag into compounds or lists.
   if (item && [(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
     return NSDragOperationNone;
@@ -592,11 +606,13 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
-  NSMutableDictionary *itemsDictionary = [NSMutableDictionary dictionary];
+  NSMutableArray *itemRows = [NSMutableArray array];
   for (NBTContainer *container in items)
-    [itemsDictionary setObject:container forKey:[NSNumber numberWithInteger:[dataView rowForItem:container]]];
+    [itemRows addObject:[NSNumber numberWithInteger:[dataView rowForItem:container]]];
   
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:itemsDictionary];
+  NSArray *dataArray = [NSArray arrayWithObjects:itemRows, items, nil];
+  
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataArray];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
   [pasteboard setData:data forType:NBTDragAndDropData];
   return YES;
@@ -605,29 +621,39 @@
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
 {
   NSPasteboard *pboard = [info draggingPasteboard];
-  NSData *rowData = [pboard dataForType:NBTDragAndDropData];
-  NSDictionary *items = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+  NSData *pasteData = [pboard dataForType:NBTDragAndDropData];
   
-  if (!items)
+  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
+  NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
+  
+  if (!pasteArray)
     return NO;
   
-  for (NSNumber *key in items) {
-    NBTContainer *dropItem = [items objectForKey:key];
-    if (!dropItem)
-      return NO;
-    
+  // [info draggingSourceOperationMask] returns NSDragOperationAll for Move operations?
+  BOOL localReorderOperation = ([info draggingSourceOperationMask] != NSDragOperationCopy && [info draggingSource] == dataView);
+  
+  // If its a local reorder get all the items before we modify the outline view
+  NSMutableArray *draggedItems = nil;
+  if (localReorderOperation) {
+    draggedItems = [NSMutableArray array];
+    for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
+      draggedItems = [dataView itemAtRow:[rowIndex integerValue]];
+    }
+  }
+  
+  // Add new items, we are using reverseObjectEnumerator because for some reason the rows are stored with indexes from bottom to top
+  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
     if (!item)
       item = fileData;
     
-    if ([item isKindOfClass:[NBTContainer class]]) {
-      // TODO: Properly handle copy/move
-      [dropItem setParent:item];
-      [self addItem:dropItem toContainer:item atIndex:index];
-      
-      // Remove the item if the operation is not a copy and the source view is the same as the receiving one
-      // [info draggingSourceOperationMask] returns NSDragOperationAll for Move operations?
-      if ([info draggingSourceOperationMask] != NSDragOperationCopy && [info draggingSource] == dataView)
-        [self removeItemAtRow:[key integerValue]]; // Remove after insert to prevent shifting of rows
+    [dropItem setParent:item];
+    [self addItem:dropItem toContainer:item atIndex:index];
+  }
+  
+  // Remove old items if the operation is not a copy and the source view is the same as the receiving one
+  if (localReorderOperation && draggedItems) {
+    for (NBTContainer *item in [draggedItems reverseObjectEnumerator]) {      
+      [self removeItemAtRow:[dataView rowForItem:item]];
     }
   }
   
@@ -641,10 +667,16 @@
 
 - (IBAction)copy:(id)sender
 {
-  // TODO: Possibly rewrite to support multiple items.
-  NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
+  NSMutableArray *items = [NSMutableArray array];
+  NSMutableArray *itemRows = [NSMutableArray array];
+  [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+    [items addObject:[dataView itemAtRow:row]];
+    [itemRows addObject:[NSNumber numberWithInteger:row]];
+  }];
   
+  NSArray *dataArray = [NSArray arrayWithObjects:itemRows, items, nil];
+  
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataArray];  
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTCopyAndPasteData] owner:self];
   [pasteboard setData:data forType:NBTCopyAndPasteData];
@@ -652,40 +684,40 @@
 
 - (IBAction)cut:(id)sender
 {
-  // TODO: Possibly rewrite to support multiple items.
-  NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:selectedItem];
+  [self copy:sender];
   
-  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-  [pasteboard declareTypes:[NSArray arrayWithObject:NBTCopyAndPasteData] owner:self];
-  [pasteboard setData:data forType:NBTCopyAndPasteData];
-  
-  [self removeItem:selectedItem fromContainer:selectedItem.parent];
+  [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+    [self removeItemAtRow:row];
+  }];
 }
 
 - (IBAction)paste:(id)sender
 {
-  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-  NSData *data = [pasteboard dataForType:NBTCopyAndPasteData];
-  if (!data) return;
-  
-  NBTContainer *item = [NSKeyedUnarchiver unarchiveObjectWithData:data];  
-  if (!item) return;
-  
   NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
-  if ([self outlineView:dataView isItemExpandable:selectedItem] && [dataView isItemExpanded:selectedItem]) {
-    // Paste as the first item in the selected item
-    [self addItem:item toContainer:selectedItem atIndex:0];
-  }
-  else {
-    // Paste below the selected item
-    NSInteger insertIndex = [[selectedItem.parent children] indexOfObject:selectedItem];
-    [self addItem:item toContainer:selectedItem.parent atIndex:insertIndex+1];
-  }
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSData *pasteData = [pasteboard dataForType:NBTCopyAndPasteData];
+    
+  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
+  NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
   
-  // Select the pasted item
-  NSInteger rowIndex = [dataView rowForItem:item];
-  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+  if (!pasteArray)
+    return;
+  
+  // Add new items
+  for (NBTContainer *dropItem in [pasteArray objectAtIndex:1]) {
+    if (!selectedItem)
+      selectedItem = fileData;
+        
+    if ([self outlineView:dataView isItemExpandable:selectedItem] && [dataView isItemExpanded:selectedItem]) {
+      // Paste as the first item in the selected item
+      [self addItem:dropItem toContainer:selectedItem atIndex:0];
+    }
+    else {
+      // Paste below the selected item
+      NSInteger insertIndex = [[selectedItem.parent children] indexOfObject:selectedItem];
+      [self addItem:dropItem toContainer:selectedItem.parent atIndex:insertIndex+1];
+    }    
+  }
 }
 
 
