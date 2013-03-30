@@ -25,6 +25,8 @@
 - (void)setItem:(NBTContainer *)item numberValue:(NSNumber *)value;
 - (void)setItem:(NBTContainer *)item name:(NSString *)name;
 
+- (void)changeViewSelectionTo:(NSIndexSet *)newSelection fromSelection:(NSIndexSet *)oldSelection;
+
 - (void)loadDatData:(NSData *)data;
 
 @end
@@ -154,17 +156,20 @@
 
 - (IBAction)removeRow:(id)sender
 {
-  NSInteger row = [dataView clickedRow];
-  if (row == -1) {
-    row = [dataView selectedRow];
+  NSInteger clickedRow = [dataView clickedRow];
+  if (clickedRow != -1 && ![dataView isRowSelected:clickedRow]) {
+    [self removeItemAtRow:clickedRow];
   }
-  if (row != -1) {
-    [self removeItemAtRow:row];
+  else {
+    [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+      [self removeItemAtRow:row];
+    }];
+    [self changeViewSelectionTo:[NSIndexSet indexSet] fromSelection:[dataView selectedRowIndexes]];
   }
 }
 
 - (IBAction)insertRow:(id)sender
-{
+{  
   NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
   if (!item) {
     item = [dataView itemAtRow:[dataView selectedRow]];
@@ -195,7 +200,7 @@
     
     // Select the newly added child
     NSInteger rowIndex = [dataView rowForItem:newItem];
-    [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+    [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
   }
   else {
     NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
@@ -215,25 +220,47 @@
     
     // Select the newly added row
     NSInteger rowIndex = [dataView rowForItem:newItem];
-    [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+    [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
   }  
 }
 
 - (IBAction)duplicateRow:(id)sender
 {
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
-  if (!item) {
-    item = [dataView itemAtRow:[dataView selectedRow]];
-  }
-
-  NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
-  [self addItem:[[item copy] autorelease] toContainer:[item parent] atIndex:itemIndex+1];
+  NSInteger clickedRow = [dataView clickedRow];
+  NSMutableIndexSet *duplicatedRows = [NSMutableIndexSet indexSet];
   
-  // Select the duplicated row
-  NSInteger rowIndex = [dataView rowForItem:item];
-  if ([dataView isItemExpanded:item] && (item.type == NBTTypeCompound || item.type == NBTTypeList))
-    rowIndex = rowIndex + item.children.count;
-  [dataView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex+1] byExtendingSelection:NO];
+  if (clickedRow != -1 && ![dataView isRowSelected:clickedRow]) {
+    NBTContainer *item = (NBTContainer *)[dataView itemAtRow:clickedRow];
+        
+    NBTContainer *newItem = [[item copy] autorelease];
+    NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
+    [self addItem:newItem toContainer:[item parent] atIndex:itemIndex+1];
+    [duplicatedRows addIndex:[dataView rowForItem:newItem]];
+  }
+  else {
+    // Get pointers to the original items before we start modifying the outline view
+    NSMutableArray *selectedItems = [NSMutableArray array];
+    [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+      [selectedItems addObject:[dataView itemAtRow:row]];
+    }];
+
+    // Add the new items to the outlineview and to a temporary array so that we can get their indexes
+    NSMutableArray *newItems = [NSMutableArray array];
+    for (NBTContainer *item in selectedItems) {
+      NBTContainer *newItem = [[item copy] autorelease];      
+      NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
+      [self addItem:newItem toContainer:[item parent] atIndex:itemIndex+1];     
+      [newItems addObject:newItem];
+    }
+    
+    // Add the new item indexes to the indexSet
+    for (NBTContainer *item in newItems) {
+      [duplicatedRows addIndex:[dataView rowForItem:item]];
+    }
+  }
+  
+  // Select the duplicated row(s) whichever the case may be
+  [self changeViewSelectionTo:duplicatedRows fromSelection:[dataView selectedRowIndexes]];
 }
 
 
@@ -269,7 +296,6 @@
 
   [container.children removeObjectAtIndex:index];
   
-  // TODO: Decide if we want to select something after we delete the selected row.
   [dataView reloadData];
   /*[dataView beginUpdates];
   [dataView removeItemsAtIndexes:[NSIndexSet indexSetWithIndex:index] inParent:(container == fileData?nil:container) withAnimation:NSTableViewAnimationEffectFade];
@@ -301,7 +327,6 @@
 
 - (void)setItem:(NBTContainer *)item listType:(NBTType)type
 {
-  // TODO: Changing the listType doesn't reformat the numberValue
   [[[self undoManager] prepareWithInvocationTarget:self] setItem:item listType:item.listType];
   
   if (item.type == NBTTypeList) {
@@ -325,6 +350,8 @@
   [[[self undoManager] prepareWithInvocationTarget:self] setItem:item type:item.type];
   
   [item setType:type];
+  // TODO: Changing the type doesn't reformat the value
+  
   [dataView reloadItem:item reloadChildren:YES];
 }
 
@@ -352,6 +379,11 @@
   [dataView reloadItem:item];
 }
 
+- (void)changeViewSelectionTo:(NSIndexSet *)newSelection fromSelection:(NSIndexSet *)oldSelection
+{
+  [[[self undoManager] prepareWithInvocationTarget:self] changeViewSelectionTo:oldSelection fromSelection:newSelection];
+  [dataView selectRowIndexes:newSelection byExtendingSelection:NO];
+}
 
 #pragma mark -
 #pragma mark OutlineView data source
@@ -655,8 +687,17 @@
   if (localReorderOperation && draggedItems) {
     for (NBTContainer *item in [draggedItems reverseObjectEnumerator]) {      
       [self removeItemAtRow:[dataView rowForItem:item]];
+      // Add deselect undo so that if we undo a drop all items get deselected
+      [[[self undoManager] prepareWithInvocationTarget:dataView] deselectAll:self];
     }
   }
+  
+  // Select the dropped items
+  NSMutableIndexSet *droppedIndexes = [NSMutableIndexSet indexSet];
+  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
+    [droppedIndexes addIndex:[dataView rowForItem:dropItem]];
+  }
+  [self changeViewSelectionTo:droppedIndexes fromSelection:[dataView selectedRowIndexes]];
   
   return YES;
 }
@@ -690,6 +731,7 @@
   [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
     [self removeItemAtRow:row];
   }];
+  [self changeViewSelectionTo:[NSIndexSet indexSet] fromSelection:[dataView selectedRowIndexes]];
 }
 
 - (IBAction)paste:(id)sender
@@ -717,8 +759,17 @@
       // Paste below the selected item
       NSInteger insertIndex = [[selectedItem.parent children] indexOfObject:selectedItem];
       [self addItem:dropItem toContainer:selectedItem.parent atIndex:insertIndex+1];
-    }    
+    }
   }
+  
+  // TODO: Select new items  
+  // Select the pasted items
+  NSMutableIndexSet *droppedIndexes = [NSMutableIndexSet indexSet];
+  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
+    [droppedIndexes addIndex:[dataView rowForItem:dropItem]];
+  }
+  [self changeViewSelectionTo:droppedIndexes fromSelection:[dataView selectedRowIndexes]];
+
 }
 
 
@@ -743,10 +794,30 @@
 #pragma mark NSMenu delegate
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
-{  
+{
+  NBTContainer *clickedItem = [dataView itemAtRow:[dataView clickedRow]];
+
   NSMenu *dataViewRightClickMenu = [dataView menu];
   if (menu != dataViewRightClickMenu)
     return;
+  
+  if ([dataView isItemExpanded:clickedItem]){
+    [[menu itemAtIndex:2] setTitle:@"Insert Child"];
+  } else {
+    [[menu itemAtIndex:2] setTitle:@"Insert Row"];
+  }
+  
+  // If we clicked on a selected row, then we want to consider all rows in the selection. Otherwise, we only consider the clicked on row.
+  BOOL clickedItemSelected = [dataView isRowSelected:[dataView rowForItem:clickedItem]];
+  NSInteger selectedRowsCount = [[dataView selectedRowIndexes] count];
+  if ((clickedItemSelected && selectedRowsCount > 1)) {
+    [[menu itemAtIndex:0] setTitle:@"Remove Rows"];
+    [[menu itemAtIndex:3] setTitle:@"Duplicate Rows"];
+  } else {
+    [[menu itemAtIndex:0] setTitle:@"Remove Row"];
+    [[menu itemAtIndex:3] setTitle:@"Duplicate Row"];
+  }
+
   
   if ([dataView clickedRow] == -1) {
     for (NSMenuItem *menuItem in [menu itemArray])
