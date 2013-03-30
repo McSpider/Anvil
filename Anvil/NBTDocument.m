@@ -159,6 +159,12 @@
   NSInteger clickedRow = [dataView clickedRow];
   if (clickedRow != -1 && ![dataView isRowSelected:clickedRow]) {
     [self removeItemAtRow:clickedRow];
+    
+    // We want to keep the selected items selected so the selection below the deleted item will need to be moved up 1 row
+    NSMutableIndexSet *newSelection = [[NSMutableIndexSet alloc] initWithIndexSet:[dataView selectedRowIndexes]];
+    [newSelection shiftIndexesStartingAtIndex:clickedRow by:-1];
+    [self changeViewSelectionTo:newSelection fromSelection:[dataView selectedRowIndexes]];
+    [newSelection release];
   }
   else {
     [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
