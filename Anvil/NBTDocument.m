@@ -167,10 +167,13 @@
     [newSelection release];
   }
   else {
-    [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+    NSIndexSet *selectedIndexes = [dataView selectedRowIndexes];
+    // Clear selection first so that it can be undone properly
+    [self changeViewSelectionTo:[NSIndexSet indexSet] fromSelection:selectedIndexes];
+    
+    [selectedIndexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
       [self removeItemAtRow:row];
     }];
-    [self changeViewSelectionTo:[NSIndexSet indexSet] fromSelection:[dataView selectedRowIndexes]];
   }
 }
 
