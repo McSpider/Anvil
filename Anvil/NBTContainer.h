@@ -59,3 +59,23 @@ enum  {
 - (NSString *)containerType;
 
 @end
+
+
+
+@interface NBTDataHelper
++ (uint8_t)byteFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
++ (uint32_t)tribyteFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
++ (uint16_t)shortFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
++ (uint32_t)intFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
++ (uint64_t)longFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
++ (NSString *)stringFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
+
++ (void)appendString:(NSString *)str toData:(NSMutableData *)data;
++ (void)appendByte:(uint8_t)v toData:(NSMutableData *)data;
++ (void)appendTribyte:(uint32_t)v toData:(NSMutableData *)data;
++ (void)appendShort:(uint16_t)v toData:(NSMutableData *)data;
++ (void)appendInt:(uint32_t)v toData:(NSMutableData *)data;
++ (void)appendLong:(uint64_t)v toData:(NSMutableData *)data;
++ (void)appendFloat:(float)v toData:(NSMutableData *)data;
++ (void)appendDouble:(double)v toData:(NSMutableData *)data;
+@end

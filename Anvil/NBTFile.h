@@ -19,25 +19,32 @@ typedef enum {
 
 @interface NBTFile : NSObject {
   uint fileType;
+  NSData *fileData;
   
   // NBT & Schematic File Data
   NBTContainer *container;
   
   // MCR & MCA File Data
-  NSData *header;
+  NSMutableArray *header;
   NSMutableArray *chunks;
 }
 
-- (void)loadFile:(NSURL *)path type:(NBTFileType)type;
+- (id)initWithData:(NSData *)data type:(NBTFileType)type;
 
 @end
 
 
-@interface McChunk : NSObject {
+
+@interface McChunk : NSObject {  
   uint length;
-  uint compression; // 1:GZip 2:Zlib
+  uint8_t compression; // 1:GZip 2:Zlib
   
   NBTContainer *container;
 }
+
+@property uint length;
+@property uint8_t compression;
+
+@property (nonatomic, retain) NBTContainer *container;
 
 @end

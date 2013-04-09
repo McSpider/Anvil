@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "NBTFile.h"
 #import "NBTContainer.h"
 #import "NBTFormatter.h"
 

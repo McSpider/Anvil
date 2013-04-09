@@ -111,6 +111,9 @@
     self.fileLoaded = NO;
     [self performSelectorInBackground:@selector(loadDatData:) withObject:data];
   }
+  if ([typeName isEqualToString:@"NBT.mca"]) {
+    [[[NBTFile alloc] initWithData:data type:MCA_File] autorelease];
+  }
   
   if (outError) {
     *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
