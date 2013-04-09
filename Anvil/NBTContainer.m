@@ -656,9 +656,7 @@
 + (uint32_t)tribyteFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer
 {
   uint32_t offset = *offsetPointer;
-  uint32_t n = ((int)bytes[offset + 2]) << 16;
-  n |= ((int)bytes[offset + 1]) << 8;
-  n |= bytes[offset];
+  uint32_t n = (bytes[offset + 0] << 16) | (bytes[offset + 1] << 8) | bytes[offset + 2];  
   *offsetPointer += 3;
   return n;
 }
@@ -700,6 +698,7 @@
 }
 + (void)appendTribyte:(uint32_t)v toData:(NSMutableData *)data
 {
+  // TODO: Fix me (Byte order is probably wrong)
   Byte* bytes;
   bytes[0] = v & 0xff;
   bytes[1] = (v >> 8) & 0xff;

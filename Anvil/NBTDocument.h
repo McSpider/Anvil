@@ -12,11 +12,12 @@
 #import "NBTFormatter.h"
 
 @interface NBTDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource,NSMenuDelegate> {
+  NBTFile *nbtFile;
   NBTContainer *fileData;
   IBOutlet NSMenu *typeMenu;
   
   IBOutlet NSOutlineView *dataView;
-  BOOL fileLoaded;  
+  BOOL fileLoaded;
 }
 
 @property (nonatomic, retain) NBTContainer *fileData;

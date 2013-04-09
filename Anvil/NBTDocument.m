@@ -112,7 +112,7 @@
     [self performSelectorInBackground:@selector(loadDatData:) withObject:data];
   }
   if ([typeName isEqualToString:@"NBT.mca"]) {
-    [[[NBTFile alloc] initWithData:data type:MCA_File] autorelease];
+    nbtFile = [[NBTFile alloc] initWithData:data type:MCA_File];
   }
   
   if (outError) {
