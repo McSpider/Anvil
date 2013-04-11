@@ -27,7 +27,8 @@
 
 - (void)changeViewSelectionTo:(NSIndexSet *)newSelection fromSelection:(NSIndexSet *)oldSelection;
 
-- (void)loadDatData:(NSData *)data;
+- (void)loadNBTData:(NSData *)data;
+- (void)loadRegionData:(NSData *)data;
 
 @end
 
@@ -42,7 +43,8 @@
   if (!self)
     return nil;
   
-  fileData = [[NBTContainer compoundWithName:nil] retain];
+  fileData = [[NBTFile alloc] initWithData:nil type:NBT_File];
+  [self setFileType:@"NBT.dat"];
   
   // Default data
   NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
@@ -52,8 +54,8 @@
   [child setParent:container];
   
   [container.children addObject:child];
-  [container setParent:fileData];
-  [fileData.children addObject:container];
+  [container setParent:fileData.container];
+  [fileData.container.children addObject:container];
   
   self.fileLoaded = YES;
   
@@ -80,8 +82,11 @@
   // Add any code here that needs to be executed once the windowController has loaded the document's window.
   
   [dataView registerForDraggedTypes:[NSArray arrayWithObjects:NBTDragAndDropData, nil]];
-  if ([fileData.children count] == 1)
-    [dataView expandItem:[fileData.children objectAtIndex:0]];
+  
+  // Expand the first item if it's a single item
+  if ((fileData.fileType == NBT_File || fileData.fileType == SCHEM_File) && [fileData.container.children count] == 1) {
+    [dataView expandItem:[fileData.container.children objectAtIndex:0]];
+  }
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
@@ -91,7 +96,9 @@
   You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
   */
   
-  return [fileData writeData];
+  if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
+    return [fileData.container writeData];
+  }
   
   if (outError) {
       *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
@@ -109,10 +116,11 @@
   
   if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
     self.fileLoaded = NO;
-    [self performSelectorInBackground:@selector(loadDatData:) withObject:data];
+    [self performSelectorInBackground:@selector(loadNBTData:) withObject:data];
   }
   if ([typeName isEqualToString:@"NBT.mca"]) {
-    nbtFile = [[NBTFile alloc] initWithData:data type:MCA_File];
+    self.fileLoaded = NO;
+    [self performSelectorInBackground:@selector(loadRegionData:) withObject:data];
   }
   
   if (outError) {
@@ -127,20 +135,28 @@
 }
 
 
-- (void)loadDatData:(NSData *)data
+- (void)loadNBTData:(NSData *)data
 {
   NBTContainer *container = [[NBTContainer alloc] init];
   [container readFromData:data];
   
-  [fileData release];
-  fileData = [container retain];
+  //[fileData release];
+  [fileData setContainer:container];
   [container release];
   
-  if (fileData.children.count == 0)
+  if (fileData.container.children.count == 0)
     [[NSAlert alertWithMessageText:@"Failed to Open File" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"The file you atempted to load does not contain any loadable data."] runModal];
   
   // Update UI in the main thread
   [self performSelectorOnMainThread:@selector(dataLoaded) withObject:nil waitUntilDone:NO];  
+}
+
+- (void)loadRegionData:(NSData *)data
+{
+  NBTFile *newFileData = [[NBTFile alloc] initWithData:data type:MCA_File];
+  self.fileData = newFileData;
+  [newFileData release];
+  [self dataLoaded];
 }
 
 - (void)dataLoaded
@@ -149,8 +165,9 @@
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
   
-  if ([fileData.children count] == 1)
-    [dataView expandItem:[fileData.children objectAtIndex:0]];
+  if ([fileData.container.children count] == 1) {
+    [dataView expandItem:[fileData.container.children objectAtIndex:0]];
+  }
 }
 
 
@@ -181,59 +198,64 @@
 }
 
 - (IBAction)insertRow:(id)sender
-{  
-  NBTContainer *item = (NBTContainer *)[dataView itemAtRow:[dataView clickedRow]];
+{
+  id item = [dataView itemAtRow:[dataView clickedRow]];
+  
+  
   if (!item) {
     item = [dataView itemAtRow:[dataView selectedRow]];
   }
-  if (!item) {
-    item = fileData;
+  if (!item && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
+    item = fileData.container;
   }
   
-  if ([dataView isItemExpanded:item] || item == fileData) {
-    NBTType childType = NBTTypeByte;
-    NSString *name = @"Child";
-    if (item.type == NBTTypeList) {
-      childType = item.listType;
-      name = nil;
-    }
-    
-    NBTContainer *newItem;
-    if (item.listType == NBTTypeCompound) {
-      newItem = [NBTContainer compoundWithName:name];
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    NBTContainer *container = (NBTContainer *)item;
+    if ([dataView isItemExpanded:item] || item == fileData) {
+      NBTType childType = NBTTypeByte;
+      NSString *name = @"Child";
+      if (container.type == NBTTypeList) {
+        childType = container.listType;
+        name = nil;
+      }
+      
+      NBTContainer *newItem;
+      if (container.listType == NBTTypeCompound) {
+        newItem = [NBTContainer compoundWithName:name];
+      }
+      else {
+        newItem = [NBTContainer containerWithName:name type:childType];
+        [newItem setNumberValue:[NSNumber numberWithInt:1]];
+      }
+      [newItem setParent:item];
+      
+      [self addItem:newItem toContainer:item atIndex:0];
+      
+      // Select the newly added child
+      NSInteger rowIndex = [dataView rowForItem:newItem];
+      [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
     }
     else {
-      newItem = [NBTContainer containerWithName:name type:childType];
+      NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
+      NBTType type = NBTTypeByte;
+      NSString *name = @"New Row";
+      if (container.parent && container.parent.type == NBTTypeList) {
+        type = container.parent.listType;
+        name = nil;
+      }
+      
+      NBTContainer *newItem;
+      newItem = [NBTContainer containerWithName:name type:type];
       [newItem setNumberValue:[NSNumber numberWithInt:1]];
+      [newItem setParent:[container parent]];
+      
+      [self addItem:newItem toContainer:[container parent] atIndex:itemIndex+1];
+      
+      // Select the newly added row
+      NSInteger rowIndex = [dataView rowForItem:newItem];
+      [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
     }
-    [newItem setParent:item];
-    
-    [self addItem:newItem toContainer:item atIndex:0];
-    
-    // Select the newly added child
-    NSInteger rowIndex = [dataView rowForItem:newItem];
-    [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
   }
-  else {
-    NSInteger itemIndex = [[[item parent] children] indexOfObject:item];
-    NBTType type = NBTTypeByte;
-    NSString *name = @"New Row";
-    if (item.parent && item.parent.type == NBTTypeList) {
-      type = item.parent.listType;
-      name = nil;
-    }
-    
-    NBTContainer *newItem;
-    newItem = [NBTContainer containerWithName:name type:type];
-    [newItem setNumberValue:[NSNumber numberWithInt:1]];
-    [newItem setParent:[item parent]];
-    
-    [self addItem:newItem toContainer:[item parent] atIndex:itemIndex+1];
-    
-    // Select the newly added row
-    NSInteger rowIndex = [dataView rowForItem:newItem];
-    [self changeViewSelectionTo:[NSIndexSet indexSetWithIndex:rowIndex] fromSelection:[dataView selectedRowIndexes]];
-  }  
 }
 
 - (IBAction)duplicateRow:(id)sender
@@ -397,83 +419,144 @@
   [dataView selectRowIndexes:newSelection byExtendingSelection:NO];
 }
 
+
 #pragma mark -
 #pragma mark OutlineView data source
 
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {
-  if (item == nil)
-    return [fileData children].count;
+  if (item == nil && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
+    return [fileData.container children].count;
+  }
+  else if (item == nil && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+    return [fileData.chunks count];
+  }
   
-  if ([item isKindOfClass:[NBTContainer class]])
+  if ([item isKindOfClass:[NBTContainer class]]) {
     return [(NBTContainer *)item children].count;
+  }
+  else if ([item isKindOfClass:[NSArray class]]) {
+    return [(NSArray *)item count];
+  }
+  else if ([item isKindOfClass:[McChunk class]]) {
+    return [[(McChunk *)item container] children].count;
+  }
   
   return 0;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
-  if (item == nil)
-    if ([[fileData children] count] > 0)
+  if (item == nil && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
+    if ([[fileData.container children] count] > 0) {
       return YES;
+    }
+  }
+  else if (item == nil && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+    if ([fileData.chunks count] > 0) {
+      return YES;
+    }
+  }
   
-  if ([item isKindOfClass:[NBTContainer class]] && ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeList))
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    if ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeList) {
+      return YES;
+    }
+  }
+  else if ([item isKindOfClass:[NSArray class]]) {
     return YES;
+  }
+  else if ([item isKindOfClass:[McChunk class]]) {
+    NBTContainer *chunkContainer = [(McChunk *)item container];
+    if ([chunkContainer type] == NBTTypeCompound || [chunkContainer type] == NBTTypeList) {
+      return YES;
+    }
+  }
   
   return NO;
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
 {
-  if (item == nil)
-    return [fileData.children objectAtIndex:index];
+  if (item == nil && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
+    return [fileData.container.children objectAtIndex:index];
+  }
+  else if (item == nil && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+    return [fileData.chunks objectAtIndex:index];
+  }
   
-  if ([item isKindOfClass:[NBTContainer class]])
+  if ([item isKindOfClass:[NBTContainer class]]) {
     return [[(NBTContainer *)item children] objectAtIndex:index];
+  }
+  else if ([item isKindOfClass:[NSArray class]]) {
+    return [(NSArray *)item objectAtIndex:index];
+  }
+  else if ([item isKindOfClass:[McChunk class]]) {
+    return [[[(McChunk *)item container] children] objectAtIndex:index];
+  }
+
   
   return nil;
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-  if (item == nil) {
+  if (item == nil && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
     if ([tableColumn.identifier isEqualToString:@"Key"])
-      return [fileData name];
+      return [fileData.container name];
     else if ([tableColumn.identifier isEqualToString:@"Type"])
-      return [NSNumber numberWithInt:[fileData type]+1];
+      return [NSNumber numberWithInt:[fileData.container type]+1];
     else if ([tableColumn.identifier isEqualToString:@"Value"])
-      return [fileData numberValue];
+      return [fileData.container numberValue];
     else if ([tableColumn.identifier isEqualToString:@"Icon"])
       return [NSImage imageNamed:@"Folder"];
   }
-  
-  if ([tableColumn.identifier isEqualToString:@"Key"]) {
-    if ([[(NBTContainer *)item parent] type] == NBTTypeList)
-      return @"List Item";
-    return [(NBTContainer *)item name];
-  }
-  else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-    return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
-  }
-  else if ([tableColumn.identifier isEqualToString:@"Value"]) {
-    if ([(NBTContainer *)item type] == NBTTypeString)
-      return [(NBTContainer *)item stringValue];
-    else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
-      return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
-    else if ([(NBTContainer *)item type] == NBTTypeList)
-      return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
-    else if ([(NBTContainer *)item type] == NBTTypeCompound)
-      return nil;
-    else
-      return [(NBTContainer *)item numberValue];
-  }
-  else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
-    if ([(NBTContainer *)item type] == NBTTypeCompound)
+  else if (item == nil && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+    if ([tableColumn.identifier isEqualToString:@"Icon"])
       return [NSImage imageNamed:@"Folder"];
-    else if ([(NBTContainer *)item type] == NBTTypeList)
-      return [NSImage imageNamed:@"List"];
-    else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
-      return [NSImage imageNamed:@"Array"];
+  }
+  
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    if ([tableColumn.identifier isEqualToString:@"Key"]) {
+      if ([[(NBTContainer *)item parent] type] == NBTTypeList)
+        return @"List Item";
+      return [(NBTContainer *)item name];
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
+      return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
+      if ([(NBTContainer *)item type] == NBTTypeString)
+        return [(NBTContainer *)item stringValue];
+      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+        return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
+      else if ([(NBTContainer *)item type] == NBTTypeList)
+        return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
+      else if ([(NBTContainer *)item type] == NBTTypeCompound)
+        return nil;
+      else
+        return [(NBTContainer *)item numberValue];
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
+      if ([(NBTContainer *)item type] == NBTTypeCompound)
+        return [NSImage imageNamed:@"Folder"];
+      else if ([(NBTContainer *)item type] == NBTTypeList)
+        return [NSImage imageNamed:@"List"];
+      else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
+        return [NSImage imageNamed:@"Array"];
+    }
+  }
+  
+  if ([item isKindOfClass:[McChunk class]]) {
+    if ([tableColumn.identifier isEqualToString:@"Key"]) {
+      return [NSString stringWithFormat:@"Chunk X%0.f Y%0.f",[(McChunk *)item chunkPos].x,[(McChunk *)item chunkPos].y];
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
+      return [NSString stringWithFormat:@"Timestamp:%i",[(McChunk *)item sectorTimestamp]];
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
+      return [NSImage imageNamed:@"Meta"];
+    }
   }
   return nil;
 }
@@ -515,21 +598,21 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-  if ([tableColumn.identifier isEqualToString:@"Icon"])
-    return NO;
-  
-  if ([tableColumn.identifier isEqualToString:@"Key"] || [tableColumn.identifier isEqualToString:@"Type"]) {
-      if ([item isKindOfClass:[NBTContainer class]])
-        return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
-  }
-  
-  if ([tableColumn.identifier isEqualToString:@"Value"]) {
-    if ([item isKindOfClass:[NBTContainer class]])
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    if ([tableColumn.identifier isEqualToString:@"Icon"]) {
+      return NO;
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Key"] || [tableColumn.identifier isEqualToString:@"Type"]) {
+      return ([[(NBTContainer *)item parent] type] == NBTTypeList?NO:YES);
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeCompound || [(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return NO;
-  }  
-  
-  return YES;
+    }
+    
+    return YES;
+  }
+  return NO;
 }
 
 - (NSCell *)outlineView:(NSOutlineView *)outlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(id)item
@@ -538,51 +621,60 @@
     return nil;
   }
   
-  if ([tableColumn.identifier isEqualToString:@"Key"]) {
-    // Add formatter to cell
-    [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:NBTTypeString]];
-    
-    // Disable list item name fields
-    if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
-      NSCell *dataCell = [[tableColumn dataCell] copy];
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    if ([tableColumn.identifier isEqualToString:@"Key"]) {
+      // Add formatter to cell
+      [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:NBTTypeString]];
+      
+      // Disable list item name fields
+      if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
+        NSCell *dataCell = [[tableColumn dataCell] copy];
+        [dataCell setEnabled:NO];
+        return [dataCell autorelease];
+      }
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Value"]) {
+      // Add formatter to cell
+      [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:[(NBTContainer *)item type]]];
+      
+      // Change list value field to a listType popup
+      if ([(NBTContainer *)item type] == NBTTypeList) {
+        NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
+        [listTypeCell setBordered:NO];
+        NSMenu *aMenu = [typeMenu copy];
+        [[aMenu itemAtIndex:0] setTitle:@"List Type"];
+        [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
+        [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
+        [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
+        [listTypeCell setMenu:aMenu];
+        [aMenu release];
+        [listTypeCell selectItemWithTag:NBTTypeByte];
+        return [listTypeCell autorelease];
+      }
+      // Disable byte/int array value fields
+      else if (([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)) {
+        NSCell *dataCell = [[tableColumn dataCell] copy];
+        [dataCell setEnabled:NO];
+        return [dataCell autorelease];
+      }
+    }
+    else if ([tableColumn.identifier isEqualToString:@"Type"]) {
+      // Disable the type popup for list items
+      if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
+        NSCell *dataCell = [[tableColumn dataCell] copy];
+        [dataCell setEnabled:NO];
+        return [dataCell autorelease];
+      }
+    }
+  }
+  else if ([item isKindOfClass:[McChunk class]]) {
+    if ([tableColumn.identifier isEqualToString:@"Type"]) {
+      // Disable the type popup for chunk items
+      NSCell *dataCell = [[NSTextFieldCell alloc] init];
       [dataCell setEnabled:NO];
       return [dataCell autorelease];
     }
   }
-  else if ([tableColumn.identifier isEqualToString:@"Value"]) {
-    // Add formatter to cell
-    [[tableColumn dataCell] setFormatter:[NBTFormatter formatterWithType:[(NBTContainer *)item type]]];
-    
-    // Change list value field to a listType popup
-    if ([(NBTContainer *)item type] == NBTTypeList) {
-      NSPopUpButtonCell *listTypeCell = [[NSPopUpButtonCell alloc] init];
-      [listTypeCell setBordered:NO];
-      NSMenu *aMenu = [typeMenu copy];
-      [[aMenu itemAtIndex:0] setTitle:@"List Type"];
-      [[aMenu itemWithTag:NBTTypeList] setHidden:YES];
-      [[aMenu itemWithTag:NBTTypeByteArray] setHidden:YES];
-      [[aMenu itemWithTag:NBTTypeIntArray] setHidden:YES];
-      [listTypeCell setMenu:aMenu];
-      [aMenu release];
-      [listTypeCell selectItemWithTag:NBTTypeByte];
-      return [listTypeCell autorelease];
-    }
-    // Disable byte/int array value fields
-    else if (([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)) {
-      NSCell *dataCell = [[tableColumn dataCell] copy];
-      [dataCell setEnabled:NO];
-      return [dataCell autorelease];
-    }
-  }
-  else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-    // Disable the type popup for list items
-    if ([[(NBTContainer *)item parent] type] == NBTTypeList) {
-      NSCell *dataCell = [[tableColumn dataCell] copy];
-      [dataCell setEnabled:NO];
-      return [dataCell autorelease];
-    }
-  }
-  
   return [tableColumn dataCell];
 }
 
@@ -760,9 +852,13 @@
   
   // Add new items
   for (NBTContainer *dropItem in [pasteArray objectAtIndex:1]) {
-    if (!selectedItem)
-      selectedItem = fileData;
-        
+    if (!selectedItem && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
+      selectedItem = fileData.container;
+    } else if (!selectedItem && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+      // TODO
+      return;
+    }
+    
     if ([self outlineView:dataView isItemExpandable:selectedItem] && [dataView isItemExpanded:selectedItem]) {
       // Paste as the first item in the selected item
       [self addItem:dropItem toContainer:selectedItem atIndex:0];
@@ -807,13 +903,13 @@
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
-  NBTContainer *clickedItem = [dataView itemAtRow:[dataView clickedRow]];
-
+  id clickedItem = [dataView itemAtRow:[dataView clickedRow]];
+  
   NSMenu *dataViewRightClickMenu = [dataView menu];
   if (menu != dataViewRightClickMenu)
     return;
   
-  if ([dataView isItemExpanded:clickedItem]){
+  if ([dataView isItemExpanded:clickedItem]) {
     [[menu itemAtIndex:2] setTitle:@"Insert Child"];
   } else {
     [[menu itemAtIndex:2] setTitle:@"Insert Row"];
@@ -829,17 +925,19 @@
     [[menu itemAtIndex:0] setTitle:@"Remove Row"];
     [[menu itemAtIndex:3] setTitle:@"Duplicate Row"];
   }
-
+  
   
   if ([dataView clickedRow] == -1) {
-    for (NSMenuItem *menuItem in [menu itemArray])
+    for (NSMenuItem *menuItem in [menu itemArray]) {
       [menuItem setEnabled:NO];
+    }
     
     [[menu itemAtIndex:2] setEnabled:YES];
   }
   else {
-    for (NSMenuItem *menuItem in [menu itemArray])
+    for (NSMenuItem *menuItem in [menu itemArray]) {
       [menuItem setEnabled:YES];
+    }
   }
 }
 

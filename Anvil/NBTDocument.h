@@ -12,15 +12,14 @@
 #import "NBTFormatter.h"
 
 @interface NBTDocument : NSDocument <NSOutlineViewDelegate,NSOutlineViewDataSource,NSMenuDelegate> {
-  NBTFile *nbtFile;
-  NBTContainer *fileData;
+  NBTFile *fileData;
   IBOutlet NSMenu *typeMenu;
   
   IBOutlet NSOutlineView *dataView;
   BOOL fileLoaded;
 }
 
-@property (nonatomic, retain) NBTContainer *fileData;
+@property (nonatomic, retain) NBTFile *fileData;
 @property BOOL fileLoaded;
 
 - (IBAction)removeRow:(id)sender;

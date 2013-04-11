@@ -25,9 +25,12 @@ typedef enum {
   NBTContainer *container;
   
   // MCR & MCA File Data
-  NSMutableArray *chunks;
+  NSMutableArray *header; // Array containing all the sectors
+  NSMutableArray *chunks; // Array containing only sectors with valid chunks
 }
+@property uint fileType;
 @property (nonatomic, retain) NBTContainer *container;
+@property (nonatomic, retain) NSMutableArray *header;
 @property (nonatomic, retain) NSMutableArray *chunks;
 
 
