@@ -188,6 +188,51 @@
 @synthesize length, compression;
 @synthesize container;
 
+- (id)copyWithZone:(NSZone *)zone
+{
+  McChunk *instanceCopy = [[McChunk allocWithZone:zone] init];
+  
+  instanceCopy.status = self.status;
+  instanceCopy.sectorOffset = self.sectorOffset;
+  instanceCopy.sectorApproxLength = self.sectorApproxLength;
+  instanceCopy.sectorTimestamp = self.sectorTimestamp;
+  instanceCopy.chunkPos = self.chunkPos;
+  instanceCopy.length = self.length;
+  instanceCopy.compression = self.compression;
+  instanceCopy.container = [[self.container copy] autorelease];
+  
+  return instanceCopy;
+}
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+  self = [super init];
+  if  (!self)
+    return nil;
+
+  status = [decoder decodeIntForKey:@"status"];
+  sectorOffset = [decoder decodeInt32ForKey:@"sectorOffset"];
+  sectorApproxLength = [decoder decodeInt32ForKey:@"sectorApproxLength"];
+  sectorTimestamp = [decoder decodeIntForKey:@"sectorTimestamp"];
+  chunkPos = [decoder decodePointForKey:@"chunkPos"];
+  length = [decoder decodeInt32ForKey:@"length"];
+  compression = [decoder decodeIntForKey:@"compression"];
+  container = [[decoder decodeObjectForKey:@"container"] retain];
+
+  return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder
+{
+  [encoder encodeInt:status forKey:@"status"];
+  [encoder encodeInt32:sectorOffset forKey:@"sectorOffset"];
+  [encoder encodeInt32:sectorApproxLength forKey:@"sectorApproxLength"];
+  [encoder encodeInt:sectorTimestamp forKey:@"sectorTimestamp"];
+  [encoder encodePoint:chunkPos forKey:@"chunkPos"];
+  [encoder encodeInt32:length forKey:@"length"];
+  [encoder encodeInt:compression forKey:@"compression"];
+  [encoder encodeObject:container forKey:@"container"];
+}
 
 @end
 
