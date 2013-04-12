@@ -35,7 +35,7 @@
 
 @implementation NBTDocument
 @synthesize fileData;
-@synthesize fileLoaded;
+@synthesize loadingFile;
 
 - (id)init
 {
@@ -57,7 +57,7 @@
   [container setParent:fileData.container];
   [fileData.container.children addObject:container];
   
-  self.fileLoaded = YES;
+  self.loadingFile = NO;
   draggedItems = [[NSArray alloc] init];
   
   return self;
@@ -117,11 +117,11 @@
   */
   
   if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
-    self.fileLoaded = NO;
+    self.loadingFile = YES;
     [self performSelectorInBackground:@selector(loadNBTData:) withObject:data];
   }
   if ([typeName isEqualToString:@"NBT.mca"]) {
-    self.fileLoaded = NO;
+    self.loadingFile = YES;
     [self performSelectorInBackground:@selector(loadRegionData:) withObject:data];
   }
   
@@ -163,7 +163,7 @@
 
 - (void)dataLoaded
 {
-  self.fileLoaded = YES;
+  self.loadingFile = NO;
   [dataView reloadData];
   [dataView.window makeFirstResponder:dataView];
   
@@ -780,6 +780,13 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
+  // Prevent dragging items that are not NBTContainers
+  for (id item in items) {
+    if (![item isKindOfClass:[NBTContainer class]]) {
+      return NO;
+    }
+  }
+  
   [draggedItems release];
   draggedItems = [items retain];
   NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
@@ -867,7 +874,7 @@
     return;
   
   // Add new items
-  for (NBTContainer *dropItem in pasteArray) {
+  for (NBTContainer *pasteItem in pasteArray) {
     if (!selectedItem && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
       selectedItem = fileData.container;
     } else if (!selectedItem && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
@@ -877,22 +884,21 @@
     
     if ([self outlineView:dataView isItemExpandable:selectedItem] && [dataView isItemExpanded:selectedItem]) {
       // Paste as the first item in the selected item
-      [self addItem:dropItem toContainer:selectedItem atIndex:0];
+      [self addItem:pasteItem toContainer:selectedItem atIndex:0];
     }
     else {
       // Paste below the selected item
       NSInteger insertIndex = [[selectedItem.parent children] indexOfObject:selectedItem];
-      [self addItem:dropItem toContainer:selectedItem.parent atIndex:insertIndex+1];
+      [self addItem:pasteItem toContainer:selectedItem.parent atIndex:insertIndex+1];
     }
   }
   
-  // TODO: Select new items  
   // Select the pasted items
-  NSMutableIndexSet *droppedIndexes = [NSMutableIndexSet indexSet];
-  for (NBTContainer *dropItem in [pasteArray reverseObjectEnumerator]) {
-    [droppedIndexes addIndex:[dataView rowForItem:dropItem]];
+  NSMutableIndexSet *pastedIndexes = [NSMutableIndexSet indexSet];
+  for (NBTContainer *pasteItem in [pasteArray reverseObjectEnumerator]) {
+    [pastedIndexes addIndex:[dataView rowForItem:pasteItem]];
   }
-  [self changeViewSelectionTo:droppedIndexes fromSelection:[dataView selectedRowIndexes]];
+  [self changeViewSelectionTo:pastedIndexes fromSelection:[dataView selectedRowIndexes]];
 
 }
 

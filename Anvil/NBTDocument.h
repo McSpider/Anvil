@@ -16,13 +16,13 @@
   IBOutlet NSMenu *typeMenu;
   
   IBOutlet NSOutlineView *dataView;
-  BOOL fileLoaded;
+  BOOL loadingFile;
   
   NSArray *draggedItems;
 }
 
 @property (nonatomic, retain) NBTFile *fileData;
-@property BOOL fileLoaded;
+@property BOOL loadingFile;
 
 - (IBAction)removeRow:(id)sender;
 - (IBAction)insertRow:(id)sender;

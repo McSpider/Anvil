@@ -467,7 +467,7 @@
 									<string key="NSFrame">{{1, 736}, {650, 15}}</string>
 									<reference key="NSSuperview" ref="543924771"/>
 									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView" ref="592358508"/>
+									<reference key="NSNextKeyView"/>
 									<string key="NSReuseIdentifierKey">_NS:1096</string>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">1</int>
@@ -510,7 +510,7 @@
 						<object class="NSProgressIndicator" id="592358508">
 							<reference key="NSNextResponder" ref="568628114"/>
 							<int key="NSvFlags">1313</int>
-							<string key="NSFrame">{{546, 4}, {100, 12}}</string>
+							<string key="NSFrame">{{496, 4}, {150, 12}}</string>
 							<reference key="NSSuperview" ref="568628114"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView"/>
@@ -579,7 +579,7 @@
 				<string key="NSClassName">UIController</string>
 			</object>
 			<object class="NSCustomView" id="734798629">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">265</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -588,8 +588,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{12, 5}, {97, 14}}</string>
 						<reference key="NSSuperview" ref="734798629"/>
-						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="978014554">
 							<int key="NSCellFlags">68157504</int>
@@ -609,8 +607,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{116, 23}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="74828467"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -700,19 +696,23 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: fileLoaded</string>
+						<string key="label">enabled: loadingFile</string>
 						<reference key="source" ref="967869531"/>
 						<reference key="destination" ref="512844837"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="967869531"/>
 							<reference key="NSDestination" ref="512844837"/>
-							<string key="NSLabel">enabled: fileLoaded</string>
+							<string key="NSLabel">enabled: loadingFile</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">fileLoaded</string>
+							<string key="NSKeyPath">loadingFile</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSValueTransformerName</string>
+								<string key="NS.object.0">NSNegateBoolean</string>
+							</object>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">100153</int>
+					<int key="connectionID">100355</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -724,15 +724,15 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">animate: fileLoaded</string>
+						<string key="label">hidden: loadingFile</string>
 						<reference key="source" ref="592358508"/>
 						<reference key="destination" ref="512844837"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="592358508"/>
 							<reference key="NSDestination" ref="512844837"/>
-							<string key="NSLabel">animate: fileLoaded</string>
-							<string key="NSBinding">animate</string>
-							<string key="NSKeyPath">fileLoaded</string>
+							<string key="NSLabel">hidden: loadingFile</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">loadingFile</string>
 							<object class="NSDictionary" key="NSOptions">
 								<string key="NS.key.0">NSValueTransformerName</string>
 								<string key="NS.object.0">NSNegateBoolean</string>
@@ -740,23 +740,23 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">100159</int>
+					<int key="connectionID">100352</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">hidden: fileLoaded</string>
+						<string key="label">animate: loadingFile</string>
 						<reference key="source" ref="592358508"/>
 						<reference key="destination" ref="512844837"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="592358508"/>
 							<reference key="NSDestination" ref="512844837"/>
-							<string key="NSLabel">hidden: fileLoaded</string>
-							<string key="NSBinding">hidden</string>
-							<string key="NSKeyPath">fileLoaded</string>
+							<string key="NSLabel">animate: loadingFile</string>
+							<string key="NSBinding">animate</string>
+							<string key="NSKeyPath">loadingFile</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">100189</int>
+					<int key="connectionID">100353</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -1203,7 +1203,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100347</int>
+			<int key="maxID">100359</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

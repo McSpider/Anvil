@@ -10,6 +10,7 @@ Minecraft NBT `.dat` file editor.
 - Finish row reorganizing code.  
 - Figure out how to load `.mca` and `.mcr` files.  
 - Give the project a better name.  
+- Add some way to edit arrays.
   
   
 ### Credits
