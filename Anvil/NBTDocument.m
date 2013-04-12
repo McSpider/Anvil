@@ -158,7 +158,7 @@
   NBTFile *newFileData = [[NBTFile alloc] initWithData:data type:MCA_File];
   self.fileData = newFileData;
   [newFileData release];
-  [self dataLoaded];
+  [self performSelectorOnMainThread:@selector(dataLoaded) withObject:nil waitUntilDone:NO];
 }
 
 - (void)dataLoaded
@@ -929,17 +929,12 @@
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
   id clickedItem = [dataView itemAtRow:[dataView clickedRow]];
+  NSIndexSet *selectedIndexes = [dataView selectedRowIndexes];
+  BOOL clickedItemSelected = [dataView isRowSelected:[dataView rowForItem:clickedItem]];
   NSMenu *dataViewRightClickMenu = [dataView menu];
   if (menu != dataViewRightClickMenu)
     return;
   
-  if (![clickedItem isKindOfClass:[NBTContainer class]]) {
-    for (NSMenuItem *menuItem in [menu itemArray]) {
-      [menuItem setEnabled:NO];
-    }
-    return;
-  }
-    
   if ([dataView isItemExpanded:clickedItem]) {
     [[menu itemAtIndex:2] setTitle:@"Insert Child"];
   } else {
@@ -947,8 +942,7 @@
   }
   
   // If we clicked on a selected row, then we want to consider all rows in the selection. Otherwise, we only consider the clicked on row.
-  BOOL clickedItemSelected = [dataView isRowSelected:[dataView rowForItem:clickedItem]];
-  NSInteger selectedRowsCount = [[dataView selectedRowIndexes] count];
+  NSInteger selectedRowsCount = [selectedIndexes count];
   if ((clickedItemSelected && selectedRowsCount > 1)) {
     [[menu itemAtIndex:0] setTitle:@"Remove Rows"];
     [[menu itemAtIndex:3] setTitle:@"Duplicate Rows"];
@@ -957,6 +951,20 @@
     [[menu itemAtIndex:3] setTitle:@"Duplicate Row"];
   }
   
+  // Disable menu if a row is selected/clicked on that isn't a NBTContainer
+  __block BOOL nonNBTContainerSelected = NO;
+  [selectedIndexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
+    if (![[dataView itemAtRow:row] isKindOfClass:[NBTContainer class]]) {
+      nonNBTContainerSelected = YES;
+    }
+  }];
+  
+  if (![clickedItem isKindOfClass:[NBTContainer class]] || (nonNBTContainerSelected && clickedItemSelected)) {
+    for (NSMenuItem *menuItem in [menu itemArray]) {
+      [menuItem setEnabled:NO];
+    }
+    return;
+  }
   
   if ([dataView clickedRow] == -1) {
     for (NSMenuItem *menuItem in [menu itemArray]) {
