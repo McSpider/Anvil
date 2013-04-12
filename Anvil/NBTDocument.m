@@ -722,11 +722,52 @@
 
 
 #pragma mark -
+#pragma mark Functions
+
+- (BOOL)item:(id)item isInsideItem:(id)possibleParent
+{
+  if (item == possibleParent) {
+    return YES;
+  }
+  
+  if ([item isKindOfClass:[NBTContainer class]]) {
+    for (NBTContainer *child in [(NBTContainer *)possibleParent children]) {
+      BOOL returnValue = [self item:item isInsideItem:child];
+      if (returnValue == YES)
+        return YES;
+    }
+  }
+  
+  return NO;
+}
+
+
+#pragma mark -
 #pragma mark OutlineView drag & drop
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
-  // TODO: Prevent dragging and dropping into itself, also prevent dragging into a list unless the types are the same.
+  // Prevent dragging into anything that is not a NBTContainer
+  if (item && ![item isKindOfClass:[NBTContainer class]]) {
+    return NSDragOperationNone;
+  }
+  else if (item == nil && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
+    return NSDragOperationNone;
+  }
+  
+  // Check if we are dragging the items into themselves
+  NSPasteboard *pboard = [info draggingPasteboard];
+  NSData *pasteData = [pboard dataForType:NBTDragAndDropData];
+  
+  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
+  NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
+  // TODO: Row indexes are NOT reliable when items get expanded
+  for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
+    if ([self item:item isInsideItem:[dataView itemAtRow:[rowIndex integerValue]]]) {
+      return NSDragOperationNone;
+    }
+  }
+
   // Only drag into compounds or lists.
   if (item && [(NBTContainer *)item type] != NBTTypeCompound && [(NBTContainer *)item type] != NBTTypeList)
     return NSDragOperationNone;
@@ -773,6 +814,7 @@
   NSMutableArray *draggedItems = nil;
   if (localReorderOperation) {
     draggedItems = [NSMutableArray array];
+    // TODO: Row indexes are NOT reliable when items get expanded
     for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
       [draggedItems addObject:[dataView itemAtRow:[rowIndex integerValue]]];
     }
@@ -883,14 +925,17 @@
 
 - (BOOL)validateUserInterfaceItem:(id )anItem
 {
+  NSInteger selectedRow = [dataView selectedRow];
+  id selectedItem = [dataView itemAtRow:selectedRow];
+  
   if ([anItem action] == @selector(copy:)) {
-    return ([dataView selectedRow] != -1);
+    return (selectedRow != -1 && [selectedItem isKindOfClass:[NBTContainer class]]);
   }
   if ([anItem action] == @selector(cut:)) {
-    return ([dataView selectedRow] != -1);
+    return ([dataView selectedRow] != -1 && [selectedItem isKindOfClass:[NBTContainer class]]);
   }
   if ([anItem action] == @selector(paste:)) {
-    return ([dataView selectedRow] != -1);
+    return ([dataView selectedRow] != -1 && [selectedItem isKindOfClass:[NBTContainer class]]);
   }
 
   return YES;
@@ -904,11 +949,17 @@
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
   id clickedItem = [dataView itemAtRow:[dataView clickedRow]];
-  
   NSMenu *dataViewRightClickMenu = [dataView menu];
   if (menu != dataViewRightClickMenu)
     return;
   
+  if (![clickedItem isKindOfClass:[NBTContainer class]]) {
+    for (NSMenuItem *menuItem in [menu itemArray]) {
+      [menuItem setEnabled:NO];
+    }
+    return;
+  }
+    
   if ([dataView isItemExpanded:clickedItem]) {
     [[menu itemAtIndex:2] setTitle:@"Insert Child"];
   } else {
