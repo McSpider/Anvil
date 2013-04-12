@@ -17,6 +17,8 @@
   
   IBOutlet NSOutlineView *dataView;
   BOOL fileLoaded;
+  
+  NSArray *draggedItems;
 }
 
 @property (nonatomic, retain) NBTFile *fileData;

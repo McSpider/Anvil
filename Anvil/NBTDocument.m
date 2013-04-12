@@ -58,6 +58,7 @@
   [fileData.container.children addObject:container];
   
   self.fileLoaded = YES;
+  draggedItems = [[NSArray alloc] init];
   
   return self;
 }
@@ -65,6 +66,7 @@
 - (void)dealloc
 {
   [fileData release];
+  [draggedItems release];
   [super dealloc];
 }
 
@@ -755,16 +757,12 @@
     return NSDragOperationNone;
   }
   
-  // Check if we are dragging the items into themselves
-  NSPasteboard *pboard = [info draggingPasteboard];
-  NSData *pasteData = [pboard dataForType:NBTDragAndDropData];
-  
-  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
-  NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
-  // TODO: Row indexes are NOT reliable when items get expanded
-  for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
-    if ([self item:item isInsideItem:[dataView itemAtRow:[rowIndex integerValue]]]) {
-      return NSDragOperationNone;
+  // Check if we are dragging the items into themselves (only valid if it is a local drag)
+  if ([info draggingSource] == dataView) {
+    for (NBTContainer *draggedItem in draggedItems) {
+      if ([self item:item isInsideItem:draggedItem]) {
+        return NSDragOperationNone;
+      }
     }
   }
 
@@ -784,13 +782,9 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
-  NSMutableArray *itemRows = [NSMutableArray array];
-  for (NBTContainer *container in items)
-    [itemRows addObject:[NSNumber numberWithInteger:[dataView rowForItem:container]]];
-  
-  NSArray *dataArray = [NSArray arrayWithObjects:itemRows, items, nil];
-  
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataArray];
+  [draggedItems release];
+  draggedItems = [items retain];
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTDragAndDropData] owner:self];
   [pasteboard setData:data forType:NBTDragAndDropData];
   return YES;
@@ -799,9 +793,7 @@
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id<NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
 {
   NSPasteboard *pboard = [info draggingPasteboard];
-  NSData *pasteData = [pboard dataForType:NBTDragAndDropData];
-  
-  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
+  NSData *pasteData = [pboard dataForType:NBTDragAndDropData];  
   NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
   
   if (!pasteArray)
@@ -809,21 +801,11 @@
   
   // [info draggingSourceOperationMask] returns NSDragOperationAll for Move operations?
   BOOL localReorderOperation = ([info draggingSourceOperationMask] != NSDragOperationCopy && [info draggingSource] == dataView);
-  
-  // If its a local reorder get all the original items before we modify the outline view
-  NSMutableArray *draggedItems = nil;
-  if (localReorderOperation) {
-    draggedItems = [NSMutableArray array];
-    // TODO: Row indexes are NOT reliable when items get expanded
-    for (NSNumber *rowIndex in [pasteArray objectAtIndex:0]) {
-      [draggedItems addObject:[dataView itemAtRow:[rowIndex integerValue]]];
-    }
-  }
-  
+    
   // Add new items, we are using reverseObjectEnumerator because for some reason the rows are stored with indexes from bottom to top
-  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
+  for (NBTContainer *dropItem in [pasteArray reverseObjectEnumerator]) {
     if (!item)
-      item = fileData;
+      item = fileData.container;
     
     [dropItem setParent:item];
     [self addItem:dropItem toContainer:item atIndex:index];
@@ -840,7 +822,7 @@
   
   // Select the dropped items
   NSMutableIndexSet *droppedIndexes = [NSMutableIndexSet indexSet];
-  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
+  for (NBTContainer *dropItem in [pasteArray reverseObjectEnumerator]) {
     [droppedIndexes addIndex:[dataView rowForItem:dropItem]];
   }
   [self changeViewSelectionTo:droppedIndexes fromSelection:[dataView selectedRowIndexes]];
@@ -856,15 +838,11 @@
 - (IBAction)copy:(id)sender
 {
   NSMutableArray *items = [NSMutableArray array];
-  NSMutableArray *itemRows = [NSMutableArray array];
   [[dataView selectedRowIndexes] enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL *stop) {
     [items addObject:[dataView itemAtRow:row]];
-    [itemRows addObject:[NSNumber numberWithInteger:row]];
   }];
-  
-  NSArray *dataArray = [NSArray arrayWithObjects:itemRows, items, nil];
-  
-  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataArray];  
+    
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:items];
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard declareTypes:[NSArray arrayWithObject:NBTCopyAndPasteData] owner:self];
   [pasteboard setData:data forType:NBTCopyAndPasteData];
@@ -885,15 +863,13 @@
   NBTContainer *selectedItem = [dataView itemAtRow:[dataView selectedRow]];
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   NSData *pasteData = [pasteboard dataForType:NBTCopyAndPasteData];
-    
-  // Items returned is an array containting two arrays [[Copied items],[Dragged row indexes]]
   NSArray *pasteArray = [NSKeyedUnarchiver unarchiveObjectWithData:pasteData];
   
   if (!pasteArray)
     return;
   
   // Add new items
-  for (NBTContainer *dropItem in [pasteArray objectAtIndex:1]) {
+  for (NBTContainer *dropItem in pasteArray) {
     if (!selectedItem && (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File)) {
       selectedItem = fileData.container;
     } else if (!selectedItem && (fileData.fileType == MCA_File || fileData.fileType == MCR_File)) {
@@ -915,7 +891,7 @@
   // TODO: Select new items  
   // Select the pasted items
   NSMutableIndexSet *droppedIndexes = [NSMutableIndexSet indexSet];
-  for (NBTContainer *dropItem in [[pasteArray objectAtIndex:1] reverseObjectEnumerator]) {
+  for (NBTContainer *dropItem in [pasteArray reverseObjectEnumerator]) {
     [droppedIndexes addIndex:[dataView rowForItem:dropItem]];
   }
   [self changeViewSelectionTo:droppedIndexes fromSelection:[dataView selectedRowIndexes]];
