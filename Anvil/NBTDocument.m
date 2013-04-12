@@ -757,8 +757,9 @@
     return NSDragOperationNone;
   }
   
-  // Check if we are dragging the items into themselves (only valid if it is a local drag)
-  if ([info draggingSource] == dataView) {
+  BOOL copying = ([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask;
+  // Check if we are dragging the items into themselves (only valid if it is a local drag and we are not copying the items)
+  if ([info draggingSource] == dataView && !copying) {
     for (NBTContainer *draggedItem in draggedItems) {
       if ([self item:item isInsideItem:draggedItem]) {
         return NSDragOperationNone;
@@ -771,11 +772,8 @@
     return NSDragOperationNone;
   
   // Drag is coming from a different view
-  if ([info draggingSource] != dataView)
-    return NSDragOperationCopy;
-  
-  if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) == NSAlternateKeyMask)
-    return NSDragOperationCopy;
+  if ([info draggingSource] != dataView || copying)
+    return NSDragOperationCopy;  
   
   return NSDragOperationMove;
 }
