@@ -44,6 +44,7 @@
     return nil;
   
   fileData = [[NBTFile alloc] initWithData:nil type:NBT_File];
+  [fileData setContainer:[NBTContainer compoundWithName:nil]];
   [self setFileType:@"NBT.dat"];
   
   // Default data
@@ -91,22 +92,24 @@
   }
 }
 
-- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
+- (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation originalContentsURL:(NSURL *)absoluteOriginalContentsURL error:(NSError **)outError
 {
-  /*
-   Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
-  You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
-  */
-  
   if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
-    return [fileData.container writeData];
+    if ([saveCompressedCheckbox state] == YES && saveOperation == NSSaveAsOperation) {
+      return [[fileData.container writeCompressedData] writeToURL:url options:NSDataWritingAtomic error:outError];
+    }
+    else if ([fileData.container isCompressed] && saveOperation == NSSaveOperation) {
+      return [[fileData.container writeCompressedData] writeToURL:url options:NSDataWritingAtomic error:outError];
+    }
+    return [[fileData.container writeData] writeToURL:url options:NSDataWritingAtomic error:outError];
   }
   
   if (outError) {
-      *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
+    *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
   }
-  return nil;
+  return NO;
 }
+
 
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
 {
@@ -134,6 +137,39 @@
 + (BOOL)autosavesInPlace
 {
     return NO;
+}
+
+- (BOOL)prepareSavePanel:(NSSavePanel *)savePanel
+{
+  // Is this safe to do? (We're getting the original type popup so we can reuse it)
+  NSPopUpButton *fileTypesPopup = [[[[[savePanel accessoryView] subviews] objectAtIndex:0] subviews] objectAtIndex:1];
+  NSMenu *fileTypesMenu = [fileTypesPopup menu];
+  
+  if (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File) {
+    [[fileTypesMenu itemWithTitle:@"NBT.mca"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"NBT.mcr"] setHidden:YES];
+    
+    [[[saveAccessoryView subviews] objectAtIndex:0] setMenu:fileTypesMenu];
+    [[[saveAccessoryView subviews] objectAtIndex:0] setTarget:[fileTypesPopup target]];
+    [[[saveAccessoryView subviews] objectAtIndex:0] setAction:[fileTypesPopup action]];
+    
+    [saveCompressedCheckbox setState:fileData.container.compressed];
+
+    [savePanel setAccessoryView:saveAccessoryView];
+  }
+  
+  // Only allow region files to be save with the same format as they where loaded
+  if (fileData.fileType == MCA_File) {
+    [[fileTypesMenu itemWithTitle:@"NBT.dat"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"NBT.mcr"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"NBT.schematic"] setHidden:YES];
+  }
+  else if (fileData.fileType == MCR_File) {
+    [[fileTypesMenu itemWithTitle:@"NBT.dat"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"NBT.mca"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"NBT.schematic"] setHidden:YES];
+  }
+  return YES;
 }
 
 
@@ -687,6 +723,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView handleKeyDown:(NSEvent *)theEvent
 {
+  // TODO: Check if the action is valid before calling it
   unichar key = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
   
   if (([theEvent modifierFlags] & NSCommandKeyMask) || ([theEvent modifierFlags] & NSAlternateKeyMask)
@@ -916,6 +953,10 @@
   }
   if ([anItem action] == @selector(paste:)) {
     return ([dataView selectedRow] != -1 && [selectedItem isKindOfClass:[NBTContainer class]]);
+  }
+  
+  if (([anItem action] == @selector(saveDocument:)) || ([anItem action] == @selector(saveDocumentAs:))) {
+    return !loadingFile;
   }
 
   return YES;

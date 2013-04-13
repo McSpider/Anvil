@@ -19,6 +19,9 @@
   BOOL loadingFile;
   
   NSArray *draggedItems;
+  
+  IBOutlet NSView *saveAccessoryView;
+  IBOutlet NSButton *saveCompressedCheckbox;
 }
 
 @property (nonatomic, retain) NBTFile *fileData;

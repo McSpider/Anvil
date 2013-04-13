@@ -38,7 +38,7 @@
   
   header = [[NSMutableArray alloc] init];
   chunks = [[NSMutableArray alloc] init];
-  self.container = [NBTContainer compoundWithName:nil];
+  self.container = nil;
   
   self.fileType = type;
   if (type == MCA_File || type == MCR_File) {

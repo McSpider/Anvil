@@ -45,6 +45,7 @@ enum  {
 @property (nonatomic, retain) NSMutableArray *arrayValue;
 @property (nonatomic, assign) NBTType listType;
 @property (nonatomic, assign) NBTContainer *parent;
+@property (nonatomic, readonly, getter = isCompressed) BOOL compressed;
 
 + (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType;
 + (NBTContainer *)containerWithName:(NSString *)theName type:(NBTType)theType value:(id)theValue;
@@ -54,6 +55,7 @@ enum  {
 + (id)nbtContainerWithData:(NSData *)data;
 - (void)readFromData:(NSData *)data;
 - (NSData *)writeData;
+- (NSData *)writeCompressedData;
 - (NBTContainer *)childNamed:(NSString *)theName;
 
 - (NSString *)containerType;

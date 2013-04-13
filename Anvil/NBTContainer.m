@@ -32,6 +32,7 @@
 @synthesize name, children, type;
 @synthesize stringValue, numberValue, arrayValue, listType;
 @synthesize parent;
+@synthesize compressed;
 
 - (id)init
 {
@@ -240,12 +241,14 @@
 
 - (NSData *)writeData
 {
-  if (!compressed) {
-    return [self data];
-  }
-  
   return [[self data] gzipDeflate];
 }
+
+- (NSData *)writeCompressedData
+{  
+  return [[self data] gzipDeflate];
+}
+
 
 - (NBTContainer *)childNamed:(NSString *)theName
 {
