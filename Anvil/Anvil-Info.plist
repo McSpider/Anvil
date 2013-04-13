@@ -14,7 +14,7 @@
 			<key>CFBundleTypeIconFile</key>
 			<string></string>
 			<key>CFBundleTypeName</key>
-			<string>NBT.dat</string>
+			<string>Minecraft .dat</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -30,7 +30,7 @@
 				<string>mcr</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>NBT.mcr</string>
+			<string>Minecraft Region .mcr</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -46,7 +46,7 @@
 				<string>mca</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>NBT.mca</string>
+			<string>Minecraft Region .mca</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -62,7 +62,7 @@
 				<string>schematic</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>NBT.schematic</string>
+			<string>Minecraft .schematic</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -89,8 +89,6 @@
 	<string>0.3b</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array/>
 	<key>CFBundleVersion</key>
 	<string>beta 0.3</string>
 	<key>LSMinimumSystemVersion</key>
@@ -101,11 +99,5 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>NSServices</key>
-	<array/>
-	<key>UTExportedTypeDeclarations</key>
-	<array/>
-	<key>UTImportedTypeDeclarations</key>
-	<array/>
 </dict>
 </plist>

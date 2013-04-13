@@ -45,7 +45,7 @@
   
   fileData = [[NBTFile alloc] initWithData:nil type:NBT_File];
   [fileData setContainer:[NBTContainer compoundWithName:nil]];
-  [self setFileType:@"NBT.dat"];
+  [self setFileType:@"Minecraft .dat"];
   
   // Default data
   NBTContainer *container = [NBTContainer compoundWithName:@"Data"];
@@ -94,7 +94,7 @@
 
 - (BOOL)writeToURL:(NSURL *)url ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation originalContentsURL:(NSURL *)absoluteOriginalContentsURL error:(NSError **)outError
 {
-  if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
+  if ([typeName isEqualToString:@"Minecraft .dat"] || [typeName isEqualToString:@"Minecraft .schematic"]) {
     if ([saveCompressedCheckbox state] == YES && saveOperation == NSSaveAsOperation) {
       return [[fileData.container writeCompressedData] writeToURL:url options:NSDataWritingAtomic error:outError];
     }
@@ -119,11 +119,11 @@
   If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
   */
   
-  if ([typeName isEqualToString:@"NBT.dat"] || [typeName isEqualToString:@"NBT.schematic"]) {
+  if ([typeName isEqualToString:@"Minecraft .dat"] || [typeName isEqualToString:@"Minecraft .schematic"]) {
     self.loadingFile = YES;
     [self performSelectorInBackground:@selector(loadNBTData:) withObject:data];
   }
-  if ([typeName isEqualToString:@"NBT.mca"]) {
+  if ([typeName isEqualToString:@"Minecraft Region .mca"]) {
     self.loadingFile = YES;
     [self performSelectorInBackground:@selector(loadRegionData:) withObject:data];
   }
@@ -146,8 +146,8 @@
   NSMenu *fileTypesMenu = [fileTypesPopup menu];
   
   if (fileData.fileType == NBT_File || fileData.fileType == SCHEM_File) {
-    [[fileTypesMenu itemWithTitle:@"NBT.mca"] setHidden:YES];
-    [[fileTypesMenu itemWithTitle:@"NBT.mcr"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft Region .mca"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft Region .mcr"] setHidden:YES];
     
     [[[saveAccessoryView subviews] objectAtIndex:0] setMenu:fileTypesMenu];
     [[[saveAccessoryView subviews] objectAtIndex:0] setTarget:[fileTypesPopup target]];
@@ -160,14 +160,14 @@
   
   // Only allow region files to be save with the same format as they where loaded
   if (fileData.fileType == MCA_File) {
-    [[fileTypesMenu itemWithTitle:@"NBT.dat"] setHidden:YES];
-    [[fileTypesMenu itemWithTitle:@"NBT.mcr"] setHidden:YES];
-    [[fileTypesMenu itemWithTitle:@"NBT.schematic"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft .dat"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft Region .mcr"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft .schematic"] setHidden:YES];
   }
   else if (fileData.fileType == MCR_File) {
-    [[fileTypesMenu itemWithTitle:@"NBT.dat"] setHidden:YES];
-    [[fileTypesMenu itemWithTitle:@"NBT.mca"] setHidden:YES];
-    [[fileTypesMenu itemWithTitle:@"NBT.schematic"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft .dat"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft Region .mca"] setHidden:YES];
+    [[fileTypesMenu itemWithTitle:@"Minecraft .schematic"] setHidden:YES];
   }
   return YES;
 }
