@@ -17,8 +17,8 @@
 {
   if ([self length] == 0) return self;
   
-  unsigned full_length = (uint)[self length];
-  unsigned half_length = [self length] / 2;
+  unsigned long full_length = (uint)[self length];
+  unsigned long half_length = [self length] / 2;
   
   NSMutableData *decompressed = [NSMutableData dataWithLength: full_length + half_length];
   BOOL done = NO;
@@ -101,8 +101,8 @@
 {
   if ([self length] == 0) return self;
   
-  unsigned full_length = (uint)[self length];
-  unsigned half_length = [self length] / 2;
+  unsigned long full_length = (uint)[self length];
+  unsigned long half_length = [self length] / 2;
   
   NSMutableData *decompressed = [NSMutableData dataWithLength:full_length + half_length];
   BOOL done = NO;
