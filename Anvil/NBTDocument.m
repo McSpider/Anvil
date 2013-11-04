@@ -11,6 +11,8 @@
 #define NBTDragAndDropData @"NBTDragAndDropData"
 #define NBTCopyAndPasteData @"NBTCopyAndPasteData"
 
+#define TYPE_MENU_OFFSET 2
+
 
 @interface NBTDocument ()
 - (void)removeItemAtRow:(NSInteger)row;
@@ -543,7 +545,7 @@
     if ([tableColumn.identifier isEqualToString:@"Key"])
       return [fileData.container name];
     else if ([tableColumn.identifier isEqualToString:@"Type"])
-      return [NSNumber numberWithInt:[fileData.container type]+1];
+      return [NSNumber numberWithInt:[fileData.container type] + TYPE_MENU_OFFSET];
     else if ([tableColumn.identifier isEqualToString:@"Value"])
       return [fileData.container numberValue];
     else if ([tableColumn.identifier isEqualToString:@"Icon"])
@@ -561,7 +563,7 @@
       return [(NBTContainer *)item name];
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-      return [NSNumber numberWithInt:[(NBTContainer *)item type]+1];
+      return [NSNumber numberWithInt:[(NBTContainer *)item type] + TYPE_MENU_OFFSET];
     }
     else if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeString)
@@ -569,7 +571,7 @@
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return [NSString stringWithFormat:@"(%i items)", (int)[[(NBTContainer *)item arrayValue] count]];
       else if ([(NBTContainer *)item type] == NBTTypeList)
-        return [NSNumber numberWithInt:[(NBTContainer *)item listType]+1];
+        return [NSNumber numberWithInt:[(NBTContainer *)item listType] + TYPE_MENU_OFFSET];
       else if ([(NBTContainer *)item type] == NBTTypeCompound)
         return nil;
       else
@@ -605,7 +607,7 @@
   if ([item isKindOfClass:[NBTContainer class]]) {
     if ([tableColumn.identifier isEqualToString:@"Value"]) {
       if ([(NBTContainer *)item type] == NBTTypeList) {
-        [self setItem:item listType:[(NSNumber *)object intValue] - 1];        
+        [self setItem:item listType:[(NSNumber *)object intValue] - TYPE_MENU_OFFSET];
         return;
       }
       else if ([(NBTContainer *)item type] == NBTTypeString) {
@@ -626,7 +628,7 @@
       }
     }
     else if ([tableColumn.identifier isEqualToString:@"Type"]) {
-      [self setItem:item type:[(NSNumber *)object intValue] - 1];      
+      [self setItem:item type:[(NSNumber *)object intValue] - TYPE_MENU_OFFSET];
     }
     else if ([tableColumn.identifier isEqualToString:@"Key"]) {;
       [self setItem:item name:(NSString *)object];
