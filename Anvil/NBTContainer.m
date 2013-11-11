@@ -429,7 +429,7 @@
     self.numberValue = [NSNumber numberWithUnsignedChar:[NBTDataHelper byteFromBytes:bytes offset:&offset]];
     NBTLog(@"   name=%@ byte=0x%x", self.name, [self.numberValue unsignedCharValue]);
   }
-  else if (self.listType == NBTTypeDouble)
+  else if (self.type == NBTTypeDouble)
   {
     uint64_t l = [NBTDataHelper longFromBytes:bytes offset:&offset];
     double d = *((double*)&l);
