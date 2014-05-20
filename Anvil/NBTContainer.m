@@ -324,7 +324,7 @@
         listItem.stringValue = [NBTDataHelper stringFromBytes:bytes offset:&offset];
         listItem.parent = self;
         [self.children addObject:listItem];
-        NBTLog(@"   name=%@ string=%@", self.name, self.stringValue);
+        NBTLog(@"   list item, string=%@", self.stringValue);
       }
       else if (self.listType == NBTTypeLong)
       {
@@ -332,7 +332,7 @@
         listItem.numberValue = [NSNumber numberWithUnsignedLongLong:[NBTDataHelper longFromBytes:bytes offset:&offset]];
         listItem.parent = self;
         [self.children addObject:listItem];
-        NBTLog(@"   name=%@ long=%qu", self.name, [self.numberValue unsignedLongLongValue]);
+        NBTLog(@"   list item, long=%qu", [self.numberValue unsignedLongLongValue]);
       }
       else if (self.listType == NBTTypeInt)
       {
@@ -340,7 +340,7 @@
         listItem.numberValue = [NSNumber numberWithInt:[NBTDataHelper intFromBytes:bytes offset:&offset]];
         listItem.parent = self;
         [self.children addObject:listItem];
-        NBTLog(@"   name=%@ int=0x%x", self.name, [self.numberValue unsignedIntValue]);
+        NBTLog(@"   list item, int=0x%x", [self.numberValue unsignedIntValue]);
       }
       else if (self.listType == NBTTypeShort)
       {
@@ -348,7 +348,7 @@
         listItem.numberValue = [NSNumber numberWithShort:[NBTDataHelper shortFromBytes:bytes offset:&offset]];
         listItem.parent = self;
         [self.children addObject:listItem];
-        NBTLog(@"   name=%@ short=0x%x", self.name, [self.numberValue unsignedShortValue]);
+        NBTLog(@"   list item, short=0x%x", [self.numberValue unsignedShortValue]);
       }
       
       else if (self.listType == NBTTypeDouble)
@@ -371,9 +371,43 @@
         [self.children addObject:listItem];
         NBTLog(@"   list item, byte=0x%x", [num unsignedCharValue]);
       }
+      else if (self.listType == NBTTypeByteArray)
+      {
+        NSMutableArray *byteArray = [[NSMutableArray alloc] init];
+        int arrayLength = [NBTDataHelper intFromBytes:bytes offset:&offset];
+        for (uint i = 0; i < arrayLength; i++) {
+          NSNumber *byteV =  [[NSNumber alloc] initWithUnsignedChar:[NBTDataHelper byteFromBytes:bytes offset:&offset]];
+          [byteArray addObject:byteV];
+          [byteV release];
+        }
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.arrayValue = byteArray;
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        [byteArray release];
+        NBTLog(@"   list item, byte array, count=%i", (int)[self.arrayValue count]);
+      }
+      else if (self.listType == NBTTypeIntArray)
+      {
+        NSMutableArray *intArray = [[NSMutableArray alloc] init];
+        int arrayLength = [NBTDataHelper intFromBytes:bytes offset:&offset];
+        for (uint i = 0; i < arrayLength; i++) {
+          NSNumber *intV =  [[NSNumber alloc] initWithInt:[NBTDataHelper intFromBytes:bytes offset:&offset]];
+          [intArray addObject:intV];
+          [intV release];
+        }
+        NBTContainer *listItem = [NBTContainer containerWithName:nil type:self.listType];
+        listItem.arrayValue = intArray;
+        listItem.parent = self;
+        [self.children addObject:listItem];
+        [intArray release];
+        
+        NBTLog(@"   list item, int array, count=%i", (int)[self.arrayValue count]);
+      }
+      
       else if (self.listType == NBTTypeCompound)
       {
-        NBTLog(@"   start list item, compound");
+        NBTLog(@"   >> start list item, compound");
         NBTContainer *compound = [NBTContainer compoundWithName:nil];
         compound.children = [NSMutableArray array];
         while (1)
@@ -393,7 +427,7 @@
         
         compound.parent = self;
         [self.children addObject:compound];
-        NBTLog(@"   end list item, compound");
+        NBTLog(@"   << end list item, compound");
       }
       else
       {
