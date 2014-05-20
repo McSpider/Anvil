@@ -579,9 +579,15 @@
     }
     else if ([tableColumn.identifier isEqualToString:@"Icon"]) {
       if ([(NBTContainer *)item type] == NBTTypeCompound)
-        return [NSImage imageNamed:@"Folder"];
+        if ([[(NBTContainer *)item children] count] < 1)
+          return [NSImage imageNamed:@"Folder Empty"];
+        else
+          return [NSImage imageNamed:@"Folder"];
       else if ([(NBTContainer *)item type] == NBTTypeList)
-        return [NSImage imageNamed:@"List"];
+        if ([[(NBTContainer *)item children] count] < 1)
+          return [NSImage imageNamed:@"List Empty"];
+        else
+          return [NSImage imageNamed:@"List"];
       else if ([(NBTContainer *)item type] == NBTTypeByteArray || [(NBTContainer *)item type] == NBTTypeIntArray)
         return [NSImage imageNamed:@"Array"];
     }

@@ -64,7 +64,7 @@ enum  {
 
 
 
-@interface NBTDataHelper
+@interface NBTDataHelper : NSObject
 + (uint8_t)byteFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
 + (uint32_t)tribyteFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;
 + (uint16_t)shortFromBytes:(const uint8_t *)bytes offset:(uint32_t *)offsetPointer;

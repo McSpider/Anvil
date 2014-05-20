@@ -15,6 +15,8 @@
 		AE0F272715ADFBCA006E6FB6 /* List.png in Resources */ = {isa = PBXBuildFile; fileRef = AE0F272615ADFBCA006E6FB6 /* List.png */; };
 		AE334680170223BD006A4D0C /* NBTFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = AE33467F170223BD006A4D0C /* NBTFormatter.m */; };
 		AE3D23AF15A3741A004AAD72 /* KBOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = AE3D23AE15A3741A004AAD72 /* KBOutlineView.m */; };
+		AE7824BF182818FB00A0EE07 /* Folder Empty.png in Resources */ = {isa = PBXBuildFile; fileRef = AE7824BE182818FB00A0EE07 /* Folder Empty.png */; };
+		AE7824C11828193500A0EE07 /* List Empty.png in Resources */ = {isa = PBXBuildFile; fileRef = AE7824C01828193500A0EE07 /* List Empty.png */; };
 		AE8854FB15D0CF18004A9D63 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AE8854FA15D0CF18004A9D63 /* README.md */; };
 		AEB4BF1E16B30C4100338355 /* NBTFile.m in Sources */ = {isa = PBXBuildFile; fileRef = AEB4BF1D16B30C4100338355 /* NBTFile.m */; };
 		AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */ = {isa = PBXBuildFile; fileRef = AEEBE37F15A6AEFF009755CD /* NBT.txt */; };
@@ -44,6 +46,8 @@
 		AE33467F170223BD006A4D0C /* NBTFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NBTFormatter.m; sourceTree = "<group>"; };
 		AE3D23AD15A3741A004AAD72 /* KBOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBOutlineView.h; sourceTree = "<group>"; };
 		AE3D23AE15A3741A004AAD72 /* KBOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBOutlineView.m; sourceTree = "<group>"; };
+		AE7824BE182818FB00A0EE07 /* Folder Empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Folder Empty.png"; sourceTree = "<group>"; };
+		AE7824C01828193500A0EE07 /* List Empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "List Empty.png"; sourceTree = "<group>"; };
 		AE8854FA15D0CF18004A9D63 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		AEB4BF1C16B30C4100338355 /* NBTFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NBTFile.h; sourceTree = "<group>"; };
 		AEB4BF1D16B30C4100338355 /* NBTFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NBTFile.m; sourceTree = "<group>"; };
@@ -161,8 +165,10 @@
 				AEF5388715A13EE200E95CF3 /* Anvil-Info.plist */,
 				AE08DE1F15ACB0E100C33EF5 /* Anvil.icns */,
 				AE0F272215ADF9BF006E6FB6 /* Folder.png */,
+				AE7824BE182818FB00A0EE07 /* Folder Empty.png */,
 				AE0F272415ADFB8D006E6FB6 /* Array.png */,
 				AE0F272615ADFBCA006E6FB6 /* List.png */,
+				AE7824C01828193500A0EE07 /* List Empty.png */,
 				AEFB0C571700C06B0026E2F5 /* Meta.png */,
 				AEF5388815A13EE200E95CF3 /* InfoPlist.strings */,
 				AEF5388B15A13EE200E95CF3 /* main.m */,
@@ -200,6 +206,15 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0450;
+				TargetAttributes = {
+					AEF5387A15A13EE200E95CF3 = {
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+						};
+					};
+				};
 			};
 			buildConfigurationList = AEF5387515A13EE100E95CF3 /* Build configuration list for PBXProject "Anvil" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -225,6 +240,7 @@
 			files = (
 				AEF5388A15A13EE200E95CF3 /* InfoPlist.strings in Resources */,
 				AEF5389015A13EE200E95CF3 /* Credits.html in Resources */,
+				AE7824BF182818FB00A0EE07 /* Folder Empty.png in Resources */,
 				AEF5389615A13EE200E95CF3 /* NBTDocument.xib in Resources */,
 				AEF5389915A13EE200E95CF3 /* MainMenu.xib in Resources */,
 				AEEBE38015A6AEFF009755CD /* NBT.txt in Resources */,
@@ -234,6 +250,7 @@
 				AE0F272715ADFBCA006E6FB6 /* List.png in Resources */,
 				AE8854FB15D0CF18004A9D63 /* README.md in Resources */,
 				AEFB0C581700C06B0026E2F5 /* Meta.png in Resources */,
+				AE7824C11828193500A0EE07 /* List Empty.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,6 +316,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -326,6 +344,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -343,6 +362,7 @@
 		AEF5389D15A13EE200E95CF3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
@@ -355,6 +375,7 @@
 		AEF5389E15A13EE200E95CF3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Anvil/Anvil-Prefix.pch";
